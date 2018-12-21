@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- <root xmlns="http://www.pccw.com.quartztransfer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xsi:schemaLocation="http://www.pccw.com.quartztransfer transfer.xsd">-->
+<root>
+    <transferInfo backup="false">
+        <srcInfo>
+            <dbName>ppmpcs2</dbName>
+            <sql>
+                <![CDATA[
+					select u.user_id, u.account, u.user_name from arch_user u 
+			    ]]>
+            </sql>
+        </srcInfo>
+        <targetInfo>
+            <dbName>form</dbName>
+            <table>my_test</table>
+            <sql>create index my_test_idx on my_test (user_id)</sql>
+        </targetInfo>
+    </transferInfo>
+    <transferInfo backup="false">
+        <srcInfo>
+            <dbName>ppmpcs2</dbName>
+            <sql>
+                <![CDATA[
+					select u.user_id, u.cust_text01 from arch_user_ext u
+			    ]]>
+            </sql>
+        </srcInfo>
+        <targetInfo>
+            <dbName>form</dbName>
+            <table>my_test1</table>
+            <sql>create index my_test1_idx on my_test1 (user_id)</sql>
+        </targetInfo>
+    </transferInfo>
+
+    <!-- 放在最后执行的sql -->
+    <callBackInfo>
+        <item>
+            <dbName>form</dbName>
+            <sql>
+                create table my_test2 as select t.account, t.user_name, t1.cust_text01 from my_test t, my_test1 t1 where
+                t.user_id = t1.user_id
+            </sql>
+            <sql>drop table my_test1 CASCADE</sql>
+            <sql>drop table my_test CASCADE</sql>
+        </item>
+    </callBackInfo>
+</root>

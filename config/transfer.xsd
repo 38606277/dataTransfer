@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.pccw.com.quartztransfer"
+            xmlns="http://www.pccw.com.quartztransfer">
+
+    <xsd:annotation>
+        <xsd:appinfo>etl tool schema</xsd:appinfo>
+        <xsd:documentation></xsd:documentation>
+    </xsd:annotation>
+
+    <!-- 简易元素定义  -->
+    <xsd:element name="dbName" type="xsd:string"/>
+    <xsd:element name="table" type="xsd:string"/>
+    <xsd:element name="engine" type="xsd:string"/>
+    <xsd:element name="sql" type="xsd:string"/>
+    <xsd:element name="params" type="xsd:string"/>
+
+
+    <!-- 元素分组定义 -->
+    <xsd:group name="srcSqlGroup">
+        <xsd:sequence>
+            <xsd:element ref="sql"/>
+            <xsd:element ref="params" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:group>
+
+    <xsd:group name="srcOptionGroup">
+        <xsd:choice>
+            <xsd:element ref="table"/>
+            <xsd:group ref="srcSqlGroup"/>
+        </xsd:choice>
+    </xsd:group>
+    <!-- 复合元素定义 -->
+    <xsd:element name="srcInfo">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dbName"/>
+                <xsd:group ref="srcOptionGroup"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="targetInfo">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dbName"/>
+                <xsd:element ref="table"/>
+                <xsd:element ref="engine" minOccurs="0"/>
+                <xsd:element ref="sql" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="transferInfo">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="srcInfo"/>
+                <xsd:element ref="targetInfo"/>
+            </xsd:sequence>
+            <xsd:attribute name="backup" type="xsd:boolean" default="false"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="item">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="dbName"/>
+                <xsd:element ref="sql" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="callBackInfo">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="item" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <!-- 根元素 -->
+    <xsd:element name="root">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="transferInfo" maxOccurs="unbounded"/>
+                <xsd:element ref="callBackInfo" minOccurs="0" maxOccurs="1"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>
+

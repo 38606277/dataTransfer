@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="root.etl.mapper.EtlJobExecuteMapper">
+
+    <!--#{transfer_id,jdbcType=INTEGER}   ,javaType=Date,jdbcType=VARCHAR,typeHandler=root.configuration.DateTypeHandle -->
+    <!--,javaType=Date,jdbcType=TIMESTAMP,typeHandler=root.configuration.DateTypeHandle-->
+    <!--  注意： 一定不能 对# 添加单引号 -->
+    <!--  新增一条记录  -->
+    <insert id="addEtlJobExecute" parameterType="root.etl.entity.EtlJobExecute">
+        insert into etl_job_execute(job_id,job_begin_date,job_end_date,job_process_number,
+            job_process_status,job_failure_reason)
+        values(
+        ${job_id},
+        <if test="job_begin_date == null">NULL</if>
+        <if test="job_begin_date != null">#{job_begin_date,jdbcType=TIMESTAMP}</if>,
+        <if test="job_end_date == null">NULL</if>
+        <if test="job_end_date != null">#{job_end_date,jdbcType=TIMESTAMP}'</if>,
+        <if test="job_process_number == null">NULL</if>
+        <if test="job_process_number != null">${job_process_number}</if>,
+        <if test="job_process_status == null">NULL</if>
+        <if test="job_process_status != null">${job_process_status}</if>,
+        <if test="job_failure_reason == null">NULL</if>
+        <if test="job_failure_reason != null">'${job_failure_reason}'</if>
+        )
+    </insert>
+
+    <update id="updateEtlJobExecute" parameterType="root.etl.entity.EtlJobExecute">
+        update etl_job_execute
+        <trim prefix="set" suffixOverrides=",">
+            <if test="job_begin_date == null"></if>
+            <if test="job_begin_date != null">job_begin_date= #{job_begin_date,jdbcType=TIMESTAMP},</if>
+            <if test="job_end_date == null"></if>
+            <if test="job_end_date != null">job_end_date = #{job_end_date,jdbcType=TIMESTAMP},</if>
+            <if test="job_process_number == null"></if>
+            <if test="job_process_number != null">job_process_number = ${job_process_number},</if>
+            <if test="job_process_status == null"></if>
+            <if test="job_process_status != null">job_process_status = ${job_process_status},</if>
+            <if test="job_failure_reason == null"></if>
+            <if test="job_failure_reason != null">job_failure_reason='${job_failure_reason',</if>
+        </trim>
+        where job_id= #{job_id}
+    </update>
+
+    <select id="getEtlJobExecuteById" parameterType="int" resultType="root.etl.entity.EtlJobExecute">
+        select job_id,job_begin_date,job_end_date,job_process_number,
+          job_process_status,job_failure_reason
+        from etl_job_execute
+        where  job_id = #{job_id}
+    </select>
+</mapper>

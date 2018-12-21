@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- <root xmlns="http://www.pccw.com.quartztransfer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xsi:schemaLocation="http://www.pccw.com.quartztransfer transfer.xsd">-->
+<root>
+
+    <!--  缺少一个  最开始的 删除表操作 -->
+    <!--  每次全量导入 ，事先删除掉本地的表   -->
+    <!--  不再删除表    -->
+<!--    <preInfo>
+        <preItem>
+            <dbName>form</dbName>
+            <sql>drop table my_transfer_user_detail CASCADE</sql>
+        </preItem>
+    </preInfo>   -->
+    <preInfo>
+        <preItem>
+            <dbName>form</dbName>
+            <sql>delete from my_transfer_user_detail</sql>
+        </preItem>
+    </preInfo>
+
+    <transferInfo backup="false">
+        <srcInfo>
+            <!--  存放源库的 数据库名称,多半是db2的  -->
+            <dbName>budget</dbName>
+            <!--  通过sql 查找需要的信息   -->
+            <sql>
+                <![CDATA[
+			    ]]>
+            </sql>
+        </srcInfo>
+        <targetInfo>
+            <!--  指定本地库 -->
+            <dbName>form</dbName>
+            <!--  指定本地库要创建的 数据表  -->
+            <table>my_transfer_user_detail</table>
+        </targetInfo>
+    </transferInfo>
+
+    <!-- 放在最后执行的sql ，删除临时表? 暂不需要 ,这里我需要涉及成  -->
+  <!--  <callBackInfo>
+        <item>
+            <dbName>form</dbName>
+            <sql>create index my_transfer_user_detail_idx on my_transfer_user_detail (user_code)</sql>
+        </item>
+    </callBackInfo>-->
+    <!--   把 临时表 的数据导入到真正的 表当中，然后删除掉临时表的数据 -》 删除这一步骤在 preSql 当中做了  -->
+    <callBackInfo>
+        <item>
+            <dbName>form</dbName>
+            <sql>delete from my_budget_depart_detail where budget_year=${budget_year}</sql>
+            <sql>insert into my_budget_depart_detail select * from my_transfer_user_detail</sql>
+        </item>
+    </callBackInfo>
+</root>
