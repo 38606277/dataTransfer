@@ -519,16 +519,19 @@ public class JobController extends RO {
         try {
             this.etlJobService.updateByPrimaryKeySelective(bean);
 
-            // 3. 修改掉 jobDataMap 当中的值
+            // 3. 修改掉 jobDataMap 当中的值的
+            // 必须在任务开启的时候才能更改掉JobDataMap 当中的信息
             Map<String, Object> itemMap = JSONObject.toJavaObject(jobDataJson, Map.class);
-            SchedulerUtil.updateJsonDataMap(pccwJob.getJobName(), pccwJob.getJobGroup(), itemMap);
 
+            SchedulerUtil.updateJsonDataMap(pccwJob.getJobName(), pccwJob.getJobGroup(), itemMap);
             // 4. 从schduler 当中修改掉状态  (运行态必须重置 cronTrigger)
             //只有任务状态为启用，才开始运行
             // 如果先启动再手工插入数据，此处会报空指针异常
             if (pccwJob.getJobStatus() == Constant.JOB_STATE.YES) {
                 SchedulerUtil.updateJobCronExpression(pccwJob.getJobName(), pccwJob.getJobGroup(), jobCron);
             }
+
+
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("变更任务异常：" + e.getMessage());

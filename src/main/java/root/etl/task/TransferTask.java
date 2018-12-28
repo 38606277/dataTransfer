@@ -96,7 +96,7 @@ public class TransferTask implements BaseJob {
             transferWithMultiThread.executePreInfo(root.getPreInfo());
 
             for (int i = 0; i < pojos.size(); i++) {
-                transferWithMultiThread.transfer(pojos.get(i), etlJob.getId(), this.etlJobExecuteService,dataMap.getIntValue("year"));    // 对每一个 对象进行导库
+                transferWithMultiThread.transfer(pojos.get(i), etlJob.getId(), this.etlJobExecuteService,dataMap.getIntValue("year"),true);    // 对每一个 对象进行导库
 
                 // 执行最后需要的回调sql
                 transferWithMultiThread.executeCallBack(root.getCallBackInfo(), etlJob.getId(), this.etlJobExecuteService,String.valueOf(dataMap.getIntValue("year")));

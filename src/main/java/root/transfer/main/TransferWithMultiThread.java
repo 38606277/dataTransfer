@@ -21,14 +21,16 @@ public class TransferWithMultiThread extends BaseTranser {
 
     private static final Logger log = Logger.getLogger(TransferWithMultiThread.class);
 
-    public void transfer(TransferInfo t,int job_id,IEtlJobExecuteService etlJobExecuteService,int year) {
+    public void transfer(TransferInfo t,int job_id,IEtlJobExecuteService etlJobExecuteService,int year,boolean bool) {
         long time = System.currentTimeMillis();
         TargetInfo target = t.getTargetInfo();
         SrcInfo src = t.getSrcInfo();
         int count = 0;
         try {
             new DbHelper().executeQuery(t.getSrcInfo(), rs -> {
-                // DbHelper.createTableInDB(rs, t,year);  不用创建表了，已经创建了
+                if(bool){
+                    DbHelper.createTableInDB(rs, t,year);  // 不用创建表了，已经创建了
+                }
                 ExecutorService service = Executors.newFixedThreadPool(InsertTask.queueSize);
                 try {
                     if (rs != null) {

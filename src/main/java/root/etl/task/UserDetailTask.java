@@ -120,7 +120,7 @@ public class UserDetailTask implements BaseJob {
             transferWithMultiThread.executePreInfo(root.getPreInfo());
 
             for (int i = 0; i < pojos.size(); i++) {
-                transferWithMultiThread.transfer(pojos.get(i), etlJob.getId(), this.etlJobExecuteService,Integer.parseInt(year));    // 对每一个 对象进行导库
+                transferWithMultiThread.transfer(pojos.get(i), etlJob.getId(), this.etlJobExecuteService,Integer.parseInt(year),false);    // 对每一个 对象进行导库
 
                 // 执行最后需要的回调sql  ： 把临时表的数据导入到本地真正的存放数据库的地方
                 transferWithMultiThread.executeCallBack(root.getCallBackInfo(), etlJob.getId(), this.etlJobExecuteService,year);

@@ -1,6 +1,7 @@
 package root.transfer.main;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import root.etl.Service.IEtlJobExecuteService;
 import root.etl.Service.IEtlJobService;
@@ -41,6 +42,7 @@ public class BaseTranser {
 
         // 回调执行完毕之后 , 更改掉 指定  JOB  的 process 为 100
         etlJobExecuteService.updateEtlJobExecuteToEnd(job_id);
+        log.info("回调SQL执行完毕");
 
     }
 
@@ -55,6 +57,7 @@ public class BaseTranser {
                     sql = sql.replace("${budget_year}",year);
                     log.info("正在删除"+year+"年份的数据...");
                 }
+                log.info("回调SQL为:"+sql);
                 st.execute(sql);
             }
         } finally {
@@ -73,9 +76,13 @@ public class BaseTranser {
             st = conn.createStatement();
 
             for (String sql : preItem.getSql()) {
-                st.execute(sql);
+                if(StringUtils.isNotBlank(sql)){
+                    log.info("执行SQL为:"+sql);
+                    st.execute(sql);
+                }
             }
         } finally {
+            log.info("导库前SQL执行完毕");
             if (st != null)
                 st.close();
             if (conn != null)

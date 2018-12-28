@@ -145,9 +145,14 @@ public class SchedulerUtil {
         JobKey jobKey = new JobKey(jobName,jobGroupName);
         JobDetail jobDetail = scheduler.getJobDetail(jobKey);
         JobDataMap jobDataMap = jobDetail.getJobDataMap();
-        jobDataMap.putAll(jsonDataMap);
-       /* scheduler.getJobDetail()
-        scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroupName)).getJobDataMap().putAll(jsonDataMap);*/
+        if(jobDataMap!=null){
+            jobDataMap.putAll(jsonDataMap);
+            for(Object str : jsonDataMap.keySet()) {
+                jobDetail.getJobDataMap().put(str.toString(),jsonDataMap.get(str));
+            }
+
+        }
+       // scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroupName)).getJobDataMap().putAll(jsonDataMap);
     }
 
     /**
