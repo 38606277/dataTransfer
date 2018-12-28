@@ -14,7 +14,7 @@ import java.util.Map;
 public interface TransferMapper {
 
     // 返回操作结果记录集
-    int createTransfer(String id);
+    int createTransfer(String transfer_content);
 
     // updateTransfer
     int updateTransfer(Map map);

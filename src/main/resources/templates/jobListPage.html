@@ -139,13 +139,15 @@
             } else if (obj.event === 'start') {
                 layer.confirm('确定运行任务吗？', function (index) {
                     //console.log(data);
+                    var postJson = {"id": data.id};
                     $.ajax({
                         url: "/job/changeState",
-                        type: "GET",
-                        data: {"id": data.id},
+                        type: "POST",
+                        data: JSON.stringify(postJson),
+                        contentType : "application/json;charsetset=UTF-8",  // 必须加上这行
                         dataType: "json",
                         success: function (data) {
-                            if (data == 1) {
+                            if (data!=null && data.message=="1000") {
                                 layer.msg("运行任务成功", {icon: 6});
                                 /*重新加载数据表格*/
                                 var id = $('#id');
@@ -172,7 +174,7 @@
                         data: JSON.stringify(postJson),
                         dataType: "json",
                         success: function (data) {
-                            if (data == 1) {
+                            if (data!=null && data.message=="1000") {
                                 layer.msg("中止任务成功", {icon: 6});
                                 /*重新加载数据表格*/
                                 var id = $('#id');

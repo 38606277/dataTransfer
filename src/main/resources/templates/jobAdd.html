@@ -120,7 +120,7 @@
             },*/
             dataType: "json",
             success: function (data) {
-                if (data == 1) {
+                if (data!=null && data.message=="1000") {
                     var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
                     parent.layer.close(index);  // 关闭layer
                     parent.layer.msg("新增任务成功", {icon: 6});

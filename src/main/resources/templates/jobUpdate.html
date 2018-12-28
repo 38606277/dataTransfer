@@ -57,7 +57,7 @@
     <div class="layui-form-item">
         <label class="layui-form-label">任务关联脚本ID：</label>
         <div class="layui-input-block">
-            <input type="text" name="jobDataMap" id="jobDataMap" style="width: 400px;" placeholder="请输入任务关联脚本ID"
+            <input type="text" name="jobDataMap" id="jobDataMap" th:value="*{jobDataMap}" style="width: 400px;" placeholder="请输入任务关联脚本ID"
                    class="layui-input">
         </div>
     </div>
@@ -99,10 +99,10 @@
             data: JSON.stringify(postJson),
             dataType: "json",
             success: function (data) {
-                if (data == 1) {
+                if (data!=null && data.message=="1000") {
                     var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
                     parent.layer.close(index);  // 关闭layer
-                    parent.layer.msg("修改成功", {icon: 6});
+                    parent.layer.msg("修改成功", {icon: 5});
                     parent.location.reload();
                 } else {
                     parent.layer.msg("修改失败", {icon: 5});

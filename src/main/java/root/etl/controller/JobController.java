@@ -316,7 +316,9 @@ public class JobController extends RO {
         bean.setJobGroup(jobGroup);
         bean.setJobCron(jobCron);
         bean.setJobDescribe(jobDescribe);
-        bean.setJobDataMap(jobDataJson.toString());   // 注意，存放的是JSONOBject的string才行
+        if(jobDataJson != null){
+            bean.setJobDataMap(jobDataJson.toString());   // 注意，存放的是JSONOBject的string才行
+        }
         bean.setJobStatus(Constant.JOB_STATE.YES);
         try {
             num = this.etlJobService.insertSelective(bean);

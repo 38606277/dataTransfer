@@ -22,7 +22,7 @@ import java.util.Map;
  * @Description: 基于数据库动态更改
  */
 @RestController
-@RequestMapping("/dataTransfer/transfer")
+@RequestMapping("/transfer")
 public class TransferControl extends RO {
 
     @Autowired

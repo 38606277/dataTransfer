@@ -1,7 +1,9 @@
 package root.etl.task;
 
+import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
 import root.etl.Util.BaseJob;
 
 import java.text.SimpleDateFormat;
@@ -19,6 +21,9 @@ public class TestTask1 implements BaseJob {
         // jobExecutionContext.getScheduler().getJobDetail("","").getJobDataMap().put("","");
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println(Thread.currentThread().getName() + " " + sdf.format(date) + " Task1： ----爱上学习,只为更多的价值----");
+        JobDetail jobDetail = jobExecutionContext.getJobDetail();
+        JobKey jobKey = jobDetail.getKey();
+        System.out.println(Thread.currentThread().getName() + " " + sdf.format(date) + this.getClass().getName()+
+                ":"+jobKey.getName()+":"+jobKey.getGroup()+" Task： ----爱上学习,只为更多的价值----");
     }
 }
