@@ -113,7 +113,10 @@ public class JobController extends RO {
         // 3. 查询分页记录集
         List<EtlJob> etlJobList = this.etlJobService.querySysJobList(new HashMap<>());
         if (etlJobList != null && etlJobList.size() > 0) {
-            return SuccessMsg("1000", JSON.toJSONString(etlJobList));
+            Map<String,Object> map3 =new HashMap<String,Object>();
+            map3.put("list",etlJobList);
+            map3.put("total",0);
+            return SuccessMsg("1000", JSON.toJSONString(map3));
         } else {
             return ErrorMsg("3000", "无数据");
         }
@@ -261,14 +264,14 @@ public class JobController extends RO {
     // 添加定时任务 VERSION :  Rest
     @PostMapping(value = "/addJob", produces = "text/plain;charset=UTF-8")
     @ResponseBody
-    public String addjob(@RequestBody JSONObject paramJson) throws Exception {
+    public String addjob(@RequestBody String paramJson) throws Exception {
 
         // 不要使用 @RequestBody  否则会出问题的 @RequestBody的作用其实是将json格式的数据转为java对象。
         logger.info("添加任务开始... ...");
         int num = 0;
         // 1. 解析  pJson 参数，注意到  jobDataMap 一定不能为空，jobDataMap 存放 transfer_id 的map
-        String pJson = paramJson.toJSONString();
-        JSONObject jsonObject = JSON.parseObject(pJson);
+      //  String pJson = paramJson.toJSONString();
+        JSONObject jsonObject = JSON.parseObject(paramJson);
         String jobName = jsonObject.getString("jobName");
         String jobClassPath = jsonObject.getString("jobClassPath");
         String jobGroup = jsonObject.getString("jobGroup");
