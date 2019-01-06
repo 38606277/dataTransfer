@@ -16,8 +16,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 // @MapperScan("root.quartz.mapper")
 public class DataTransferApp {
 
+
+
     public static void main(String[] args) {
 
         ApplicationContext context = SpringApplication.run(DataTransferApp.class);
+
     }
 }
