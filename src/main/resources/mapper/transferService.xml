@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="root.job.service.TransferService">
+
+    <!-- 新增一条记录 , 为 string的paramterType  一定要变为_parameter 否则报no getter String 异常  -->
+    <insert id="addTransferSQL" parameterType="Map" useGeneratedKeys="true" keyProperty="id">
+        insert into etl_transfer(transfer_name,transfer_content)
+        values ( #{transfer_name,jdbcType=VARCHAR}, #{transfer_content,jdbcType=VARCHAR})
+    </insert>
+
+    <!-- 修改 transfer 信息 -->
+    <update id="updateTransfer" parameterType="Map">
+        update etl_transfer set transfer_content=#{transfer_content,jdbcType=VARCHAR},
+        transfer_name=#{transfer_name,jdbcType=VARCHAR}
+        where transfer_id=#{transfer_id,jdbcType=INTEGER}
+    </update>
+
+    <!-- 批量删除 数据 -->
+    <delete id="batchDeleteTransfer" parameterType="java.util.List">
+             DELETE FROM etl_transfer where transfer_id in
+
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+                    #{item}     
+        </foreach>
+    </delete>
+
+    <!-- 删除单个数据 -->
+    <delete id="deleteTransfer" parameterType="int">
+        DELETE FROM etl_transfer where transfer_id = #{transfer_id}
+    </delete>
+
+    <select id="getAllTransfer" resultType="Map">
+        select transfer_id,transfer_content from etl_transfer
+    </select>
+
+    <!-- 根据指定的 transfer_id 得到对应的  transfer_content-->
+    <select id="getTransferById" parameterType="int" resultType="Map">
+        select transfer_id,transfer_name,transfer_content from etl_transfer where transfer_id=#{transfer_id}
+    </select>
+</mapper>
