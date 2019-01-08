@@ -2,8 +2,11 @@ package root.job.service;
 
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.session.SqlSession;
 import org.quartz.*;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.quartz.CronScheduleBuilder.*;
 
@@ -17,38 +20,46 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
-public class JobService {
-
+// 直接与 mapper.xml 对应
+@Mapper
+public interface JobService {
 
     /*返回把有的QuartzJob*/
-    public List<Map<String,String>> GetAllJob() {
+    List<Map> getAllJob();
 
+    Map<String,Object> getJobByParam(Map map);
 
-        return new ArrayList<>();
-    }
-    /*在数据库中返回一个Job
+    int addJob(Map map);
+
+    Map getJobById(int id);
+
+    int updateJobById(Map map);
+
+    int deleteJobById(int id);
+
+   /* *//*在数据库中返回一个Job
     *
     *
     *
-    * */
+    * *//*
     public JSONObject GetJobByID(SqlSession sqlSession, String job_id){
 
 
         return null;
     }
-    /*返回所有运行中QuartzJob
+    *//*返回所有运行中QuartzJob
     *
     *
     *
     *
-    * **********************/
+    * **********************//*
     public List GetAllRuningJob() {
 
        //查询运行中的Scheduler
         return new ArrayList<>();
     }
 
-    /****************创建一个QuartzJob*****************
+    *//****************创建一个QuartzJob*****************
      *
      * 参数说明：
      *
@@ -66,7 +77,7 @@ public class JobService {
      * 输出参数
      * success:
      * error:
-     **************************************************/
+     **************************************************//*
     public String CreateJob(SqlSession sqlSession, JSONObject jsonJob) {
 
         //1.检查JobName必须唯一
@@ -109,7 +120,7 @@ public class JobService {
         return  mapJob.get("id").toString();
     }
 
-    /*修改一个QuartzJob*/
+    *//*修改一个QuartzJob*//*
     public String UpdateJob() {
 
         //数据库中修改一条Job
@@ -131,7 +142,7 @@ public class JobService {
         return "";
     }
 
-    /*删除一个QuartzJob*/
+    *//*删除一个QuartzJob*//*
     public String DeleteJob() {
 
         try {
@@ -149,7 +160,7 @@ public class JobService {
         return "";
     }
 
-    /*执行所有的QuartzJob*/
+    *//*执行所有的QuartzJob*//*
     public String ExecuteAllJob() {
 
         //查找etl_job表中状态是1的
@@ -187,16 +198,16 @@ public class JobService {
 
 
 
-    /*暂停一个QuartzJob*/
+    *//*暂停一个QuartzJob*//*
     public String PauseJob() {
 
 
         return "";
     }
 
-    /*还原一个QuartzJob*/
+    *//*还原一个QuartzJob*//*
     public String ResumeJob() {
 
         return "";
-    }
+    }*/
 }

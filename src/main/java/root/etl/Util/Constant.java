@@ -19,6 +19,10 @@ public class Constant {
          * 停用
          */
         public static int NO = 0;
+        /**
+         * 任务执行中 （正在执行状态：etl_job_execute 用到）
+         */
+        public static int STARTING = 2;
     }
 
     /**
@@ -51,5 +55,18 @@ public class Constant {
          * 失败
          */
         public static String FAIL = "0";
+    }
+
+    public static class TASK_CLASS {
+
+        // 解决移动历史数据版本的 导库任务
+        public static String TRANSFER_VALUE = "1";
+
+        public static String TRANSFER_TASK_CLASS_PATH = "root.job.task.TransferTask";
+
+        // 默认的 导库任务
+        public static String DEFAULT_VALUE = "2";
+
+        public static String DEFAULT_TASK_CLASS_PATH = "root.job.task.DefaultTask";
     }
 }

@@ -27,7 +27,12 @@ import java.util.Map;
 @Component
 public class InitStartSchedule implements CommandLineRunner {
 
-    private static Logger logger = Logger.getLogger(InitStartSchedule.class);
+    @Override
+    public void run(String... args) throws Exception {
+        System.out.println("系统启动完成====================");
+    }
+
+   /* private static Logger logger = Logger.getLogger(InitStartSchedule.class);
 
     @Autowired
     private IEtlJobService etlJobService;
@@ -38,9 +43,9 @@ public class InitStartSchedule implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        /**
+        *//**
          * 用于程序启动时加载定时任务，并执行已启动的定时任务(只会执行一次，在程序启动完执行)
-         */
+         *//*
         //查询job状态为启用的
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("jobStatus", "1");
@@ -96,5 +101,5 @@ public class InitStartSchedule implements CommandLineRunner {
     public static BaseJob getClass(String classname) throws Exception {
         Class<?> c = Class.forName(classname);
         return (BaseJob) c.newInstance();
-    }
+    }*/
 }

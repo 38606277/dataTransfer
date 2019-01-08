@@ -110,6 +110,37 @@ public class SchedulerUtil {
     }
 
     /**
+     *
+     * 功能描述:
+     *      针对内存JOB 【删除功能】
+     * @param:
+     * @return:
+     * @auther: pccw
+     * @date: 2019/1/7 21:16
+     */
+    public static void deleteJobForMemory(String jobName, String jobGroupName) throws SchedulerException {
+        // 通过 SchedulerFactory 获取一个调度器实例
+        SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+        Scheduler scheduler = schedulerFactory.getScheduler();
+
+        TriggerKey triggerKey = TriggerKey.triggerKey(jobName, jobGroupName);
+
+        if(triggerKey != null){
+            // 停掉 trigger
+            scheduler.pauseTrigger(TriggerKey.triggerKey(jobName, jobGroupName));
+            // 卸载关联关系
+            scheduler.unscheduleJob(TriggerKey.triggerKey(jobName, jobGroupName));
+        }
+
+        // 从内存当中删除掉 job
+        JobKey jobKey = JobKey.jobKey(jobName, jobGroupName);
+        if(jobKey != null){
+            scheduler.deleteJob(jobKey);
+        }
+
+    }
+
+    /**
      * 功能描述:
      * 修改定时任务表达式
      *
@@ -136,6 +167,34 @@ public class SchedulerUtil {
         }
     }
 
+
+    public static void updateJobCronExpressionForMemory(String jobName, String jobGroupName, String cronExpression,Map jobDataMap) throws Exception {
+        try {
+            SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+            Scheduler scheduler = schedulerFactory.getScheduler();
+            TriggerKey triggerKey = TriggerKey.triggerKey(jobName, jobGroupName);
+            // 表达式调度构建器
+            CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExpression);
+            CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
+
+            //对 trigger 进行判断 如果 为null 则代表已经丢失了 job，则需要重新建立
+            // 按新的cronExpression表达式重新构建trigger
+            if(trigger != null){
+                trigger = trigger.getTriggerBuilder().withIdentity(triggerKey).withSchedule(scheduleBuilder).startNow().build();
+                // 按新的trigger重新设置job执行
+                scheduler.rescheduleJob(triggerKey, trigger);
+            }else {
+                logger.warn("系统丢失了此job:"+jobName+",正在重新构建此JOB信息到内存当中..");
+                addJob(Constant.TASK_CLASS.DEFAULT_TASK_CLASS_PATH,jobName,jobGroupName,cronExpression,jobDataMap);
+                logger.warn("构建成功");
+            }
+
+        } catch (SchedulerException e) {
+            logger.error("更新定时任务失败");
+            throw new Exception("更新定时任务失败");
+        }
+    }
+
     // 重置下 指定job的 jobDataMap  信息
     //  // 重置下 jsonDataMap
     //            scheduler.getJobDetail(JobKey.jobKey(jobName,jobGroupName)).getJobDataMap().putAll(jsonDataMap);
@@ -153,6 +212,26 @@ public class SchedulerUtil {
 
         }
        // scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroupName)).getJobDataMap().putAll(jsonDataMap);
+    }
+
+    // 暂不需要使用
+    public static void updateJsonDataMapForMemory(String jobName, String jobGroupName, Map jsonDataMap) throws Exception {
+        SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+        Scheduler scheduler = schedulerFactory.getScheduler();
+        JobKey jobKey = new JobKey(jobName,jobGroupName);
+        JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+
+        // 对 jobDetail 进行判断 如果说为Null 则内存已经丢失了 job的信息，则需要再次建立 job 信息
+        //    如果不为Null ，则修改掉 dataMap 信息
+        JobDataMap jobDataMap = jobDetail.getJobDataMap();
+        if(jobDataMap!=null){
+            jobDataMap.putAll(jsonDataMap);
+            for(Object str : jsonDataMap.keySet()) {
+                jobDetail.getJobDataMap().put(str.toString(),jsonDataMap.get(str));
+            }
+
+        }
+        // scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroupName)).getJobDataMap().putAll(jsonDataMap);
     }
 
     /**

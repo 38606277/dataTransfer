@@ -2,8 +2,8 @@ package root.transfer.main;
 
 
 import org.apache.log4j.Logger;
-import root.configuration.SpringApplicationContextUtil;
 import root.etl.Service.IEtlJobExecuteService;
+import root.job.service.JobExecuteService;
 import root.transfer.pojo.SrcInfo;
 import root.transfer.pojo.TargetInfo;
 import root.transfer.pojo.TransferInfo;
@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class TransferWithMultiThread extends BaseTranser {
+public class TransferWithMultiThreadForMemory extends BaseTranser {
 
-    private static final Logger log = Logger.getLogger(TransferWithMultiThread.class);
+    private static final Logger log = Logger.getLogger(TransferWithMultiThreadForMemory.class);
 
-    public void transfer(TransferInfo t,int job_id,IEtlJobExecuteService etlJobExecuteService,int year,boolean bool) {
+    public void transfer(TransferInfo t, int job_execute_id, JobExecuteService jobExecuteService, int year, boolean bool) {
         long time = System.currentTimeMillis();
         TargetInfo target = t.getTargetInfo();
         SrcInfo src = t.getSrcInfo();
@@ -70,15 +70,13 @@ public class TransferWithMultiThread extends BaseTranser {
                                 elements.add(DataConvert.getVal(rs.getObject(i)));
                             }
                             if (rs.getRow() % 5000 == 0) {
-                                // TODO concrunnetCount  /  allCount   花了多少时间   -> 预估剩余的时间
-                                // TODO :  写一次小进度  => 写到数据库 ,也传递到前台 ( 不告知用户还剩多长时间完成)
-                                service.submit(new InsertTask(target.getDbName(), insertSql, list,everyProcess,etlJobExecuteService,job_id));
+                                service.submit(new InsertTaskForMemory(target.getDbName(), insertSql, list,everyProcess,jobExecuteService,job_execute_id));
                                 log.info("提交了" + rs.getRow() + "行");
                                 list = new ArrayList<>();
                             }
                         }
                         // 把 剩余的不足5000 行的继续写一次
-                        service.submit(new InsertTask(target.getDbName(), insertSql, list,everyProcess,etlJobExecuteService,job_id));
+                        service.submit(new InsertTaskForMemory(target.getDbName(), insertSql, list,everyProcess,jobExecuteService,job_execute_id));
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);

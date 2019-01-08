@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="root.job.service.JobService">
+
+    <!--  重复使用的sql片段 -->
+    <sql id="Base_Column_List">
+        id,job_name,job_describe,job_group,job_cron,transfer_id,job_param,job_status
+    </sql>
+
+    <!-- 获取任务总数-->
+    <select id="getJobCount" resultType="java.lang.Integer">
+        select count(id) count from etl_job
+    </select>
+
+    <!-- 查询所有的定时任务信息 -->
+    <select id="getAllJob" resultType="Map">
+    select
+    <include refid="Base_Column_List"/>
+    from etl_job
+    </select>
+
+    <!-- 根据条件查询定时任务列表  -->
+    <select id="getJobByParam" parameterType="Map" resultType="Map">
+        select
+        <include refid="Base_Column_List"/>
+        from etl_job where 1=1
+        <if test="id != null">
+            and id = #{id,jdbcType=INTEGER}
+        </if>
+        <if test="job_status != null">
+            and job_status = #{job_status,jdbcType=VARCHAR}
+        </if>
+        <if test="job_cron != null">
+            and job_cron like concat('%',#{job_cron},'%')
+        </if>
+        <if test="job_group != null">
+            and job_group = #{job_group,jdbcType=VARCHAR}
+        </if>
+        <if test="job_name != null">
+            and job_name = #{job_name,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <!-- 新增定时任务 ,并且返回自增长主键 -->
+    <insert id="addJob" parameterType="Map" useGeneratedKeys="true" keyProperty="id">
+        insert into etl_job
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="job_name != null">
+                job_name,
+            </if>
+            <if test="job_describe != null">
+                job_describe,
+            </if>
+            <if test="job_group != null">
+                job_group,
+            </if>
+            <if test="job_cron != null">
+                job_cron,
+            </if>
+            <if test="transfer_id != null">
+                transfer_id,
+            </if>
+            <if test="job_param != null">
+                job_param,
+            </if>
+            <if test="job_status != null">
+                job_status,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="job_name != null">
+                #{job_name,jdbcType=VARCHAR},
+            </if>
+            <if test="job_describe != null">
+                #{job_describe,jdbcType=VARCHAR},
+            </if>
+            <if test="job_group != null">
+                #{job_group,jdbcType=VARCHAR},
+            </if>
+            <if test="job_cron != null">
+                #{job_cron,jdbcType=VARCHAR},
+            </if>
+            <if test="transfer_id != null">
+                #{transfer_id,jdbcType=INTEGER},
+            </if>
+            <if test="job_param != null">
+                #{job_param,jdbcType=VARCHAR},
+            </if>
+            <if test="job_status != null">
+                #{job_status,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 根据主键查询定时任务 -->
+    <select id="getJobById" parameterType="java.lang.Integer"
+            resultType="Map">
+        select
+        <include refid="Base_Column_List"/>
+        from etl_job
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 更新定时任务信息 -->
+    <update id="updateJobById" parameterType="Map">
+        update etl_job
+        <set>
+            <if test="job_describe != null">
+                job_describe = #{job_describe,jdbcType=VARCHAR},
+            </if>
+            <if test="job_status != null">
+                job_status = #{job_status,jdbcType=INTEGER},
+            </if>
+            <if test="job_cron != null">
+                job_cron = #{job_cron,jdbcType=VARCHAR},
+            </if>
+            <if test="job_group != null">
+                job_group = #{job_group,jdbcType=VARCHAR},
+            </if>
+            <if test="job_name != null">
+                job_name = #{job_name,jdbcType=VARCHAR},
+            </if>
+            <if test="transfer_id != null">
+                transfer_id = #{transfer_id,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <!-- 删除定时任务 -->
+    <delete id="deleteJobById" parameterType="java.lang.Integer">
+        delete from
+        etl_job
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+</mapper>

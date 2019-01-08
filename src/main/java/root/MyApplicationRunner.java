@@ -18,7 +18,7 @@ public class MyApplicationRunner implements ApplicationRunner {
     public void run(ApplicationArguments var1) throws Exception {
 
         //系统启动时，启动Quartz
-        jobService.ExecuteAllJob();
+      /*  jobService.ExecuteAllJob();*/
         System.out.println("启动成功!");
     }
 

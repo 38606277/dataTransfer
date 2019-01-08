@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import root.etl.Service.IEtlJobExecuteService;
 import root.etl.Service.IEtlJobService;
+import root.job.service.JobExecuteService;
 import root.transfer.pojo.CallBackInfo;
 import root.transfer.pojo.Item;
 import root.transfer.pojo.PreInfo;
@@ -14,6 +15,8 @@ import root.transfer.util.DbHelper;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Date;
+import java.util.Map;
 
 public class BaseTranser {
     private static final Logger log = Logger.getLogger(BaseTranser.class);
@@ -46,6 +49,24 @@ public class BaseTranser {
 
     }
 
+    // 回调执行一些sql
+    public void executeCallBack(CallBackInfo call,JobExecuteService jobExecuteService,String year,String month,int job_execute_id) throws Exception {
+        if (call == null || call.getItem() == null) return;
+        log.info("开始执行回调sql...");
+        for (Item item : call.getItem()) {
+            this.executeWithItem(item,year,month);
+        }
+
+        // 回调执行完毕之后 , 更改掉 指定  JOB  的 process 为 100
+        Map map = jobExecuteService.getJobExecuteById(job_execute_id);
+        map.put("job_process",new BigDecimal("100.00"));
+        map.put("end_time",new Date());
+        jobExecuteService.updateEtlJobExecute(map);
+
+        log.info("回调SQL执行完毕");
+
+    }
+
     private void executeWithItem(Item item,String year) throws Exception {
         Connection conn = null;
         Statement st = null;
@@ -55,6 +76,29 @@ public class BaseTranser {
             for (String sql : item.getSql()) {
                 if(sql.contains("${budget_year}")){
                     sql = sql.replace("${budget_year}",year);
+                    log.info("正在删除"+year+"年份的数据...");
+                }
+                log.info("回调SQL为:"+sql);
+                st.execute(sql);
+            }
+        } finally {
+            if (st != null)
+                st.close();
+            if (conn != null)
+                conn.close();
+        }
+    }
+
+    private void executeWithItem(Item item,String year,String month) throws Exception {
+        Connection conn = null;
+        Statement st = null;
+        try {
+            conn = DbHelper.getConnection(item.getDbName());
+            st = conn.createStatement();
+            for (String sql : item.getSql()) {
+                if(sql.contains("${budget_year}")){
+                    sql = sql.replace("${budget_year}",year);
+                    sql = sql.replace("${budget_month}",month);
                     log.info("正在删除"+year+"年份的数据...");
                 }
                 log.info("回调SQL为:"+sql);

@@ -74,6 +74,7 @@ FROM
         AND a.PROJECT_ID=d.PROJECT_ID
         AND a.BUDGET_TYPE_LOOKUP_CODE = 'OPEX'
         AND a.BUDGET_YEAR=${budget_year}
+		AND a.BUDGET_MONTH=${budget_month}
         GROUP BY
             a.COMPANY_NATURE_LOOKUP_CODE,
             a.SET_OF_BOOKS_ID,
@@ -185,6 +186,7 @@ LEFT JOIN
                     1=1
                 AND SUBSTR(tba.DOCUMENT_TYPE_CODE,1,3)='HT_'
                 AND tba.budget_year=${budget_year}
+				AND tba.budget_month=${budget_month}
                 GROUP BY
                     tba.COMPANY_ID,
                     tba.DEPARTMENT_ID,
@@ -243,6 +245,7 @@ LEFT JOIN
                                               'ERP_YSGPZ',
                                               'ERP_YNBWL')
                 AND tba.BUDGET_YEAR=${budget_year}
+				AND tba.BUDGET_MONTH=${budget_month}
                 AND (
                         tba.RESERVED_BUDGET_AMOUNT<>0
                     OR  tba.OCCUPIED_BUDGET_AMOUNT<>0)
@@ -362,6 +365,7 @@ LEFT JOIN
                                               'ERP_SGPZ',
                                               'ERP_NBWL')
                 AND tba.BUDGET_YEAR=${budget_year}
+				AND tba.BUDGET_MONTH=${budget_month}
                 AND (
                         tba.RESERVED_BUDGET_AMOUNT<>0
                     OR  tba.OCCUPIED_BUDGET_AMOUNT<>0)
@@ -428,5 +432,3 @@ ORDER BY
     pa.PROJECT_ID,
     pbz.DOCUMENT_CODE,
     pbz.ORDER_NUMBER DESC
-FETCH
-    FIRST 10000 rows only

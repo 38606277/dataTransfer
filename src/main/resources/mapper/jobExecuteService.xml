@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="root.job.service.JobExecuteService">
+
+    <!--  注意： 一定不能 对# 添加单引号 -->
+    <!--  新增一条记录  -->
+    <insert id="addJobExecute" parameterType="Map" useGeneratedKeys="true" keyProperty="id">
+        insert into etl_job_execute(job_id,begin_time,end_time,job_process,
+        job_status,job_failure_reason)
+        values(
+        ${job_id},
+        <if test="begin_time == null">NULL</if>
+        <if test="begin_time != null">#{begin_time,jdbcType=DATE}</if>,
+        <if test="end_time == null">NULL</if>
+        <if test="end_time != null">#{end_time,jdbcType=DATE}</if>,
+        <if test="job_process == null">NULL</if>
+        <if test="job_process != null">${job_process}</if>,
+        <if test="job_status == null">NULL</if>
+        <if test="job_status != null">${job_status}</if>,
+        <if test="job_failure_reason == null">NULL</if>
+        <if test="job_failure_reason != null">'${job_failure_reason}'</if>
+        )
+    </insert>
+
+
+    <select id="getJobExecuteById" parameterType="int" resultType="Map">
+        select id,job_id,job_status,begin_time,end_time,job_process,job_failure_reason
+        from etl_job_execute
+        where  id = #{id}
+    </select>
+
+    <update id="updateEtlJobExecute" parameterType="Map">
+        update etl_job_execute
+        <trim prefix="set" suffixOverrides=",">
+            <if test="begin_time == null"></if>
+            <if test="begin_time != null">begin_time= #{begin_time,jdbcType=DATE},</if>
+            <if test="end_time == null"></if>
+            <if test="end_time != null">end_time = #{end_time,jdbcType=DATE},</if>
+            <if test="job_process == null"></if>
+            <if test="job_process != null">job_process = ${job_process},</if>
+            <if test="job_status == null"></if>
+            <if test="job_status != null">job_status = ${job_status},</if>
+            <if test="job_failure_reason == null"></if>
+            <if test="job_failure_reason != null">job_failure_reason='${job_failure_reason',</if>
+        </trim>
+        where job_id= #{job_id}
+    </update>
+
+</mapper>
