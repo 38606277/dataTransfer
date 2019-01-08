@@ -117,50 +117,46 @@ public class TransferTask implements BaseJob {
         int job_execute_id = Integer.parseInt(jobExecuteMap.get("id").toString());
 
         try {
+
             // ============== 步骤4 ： for 循环执行脚本
             for(int i=0; i<this.yearArray.length; i++){
+                String transfer_sql_year = content;
                 int transferYear = yearArray[i];
                 logger.info("开始同步"+transferYear+"年份的数据.......");
-                content = content.replace("${budget_year}",String.valueOf(transferYear));   // 替换掉占位符
+                transfer_sql_year = transfer_sql_year.replace("${budget_year}",String.valueOf(transferYear));   // 替换掉占位符
                 for(int j=0; j<this.monthArray.length; j++){
-                    int transferMonth = monthArray[i];
-                    logger.info("开始同步"+transferYear+"年份"+transferMonth+"月份的数据.......");
-
+                    String transfer_sql_temp = transfer_sql_year;
+                    int transferMonth = monthArray[j];
                     // ===》 导库
                     // ============= 步骤5.1
                     logger.info("开始同步"+transferYear+"年份"+transferMonth+"月份的数据.......");
-                    content = content.replace("${budget_month}",String.valueOf(transferMonth));
-                    logger.info("当前转换后的SQL为:\n"+content);
-
+                    transfer_sql_temp = transfer_sql_temp.replace("${budget_month}",String.valueOf(transferMonth));
+                   //  logger.info("当前转换后的SQL为:\n"+content);
                     // ============= 步骤5.2 : 组装好 root 对象，把 content 塞入到 root.srcInfo.sql 当中去
+                    root = XmlUtil.pareseXmlToJavaBean(TransferTask.class.getResourceAsStream(contentXML));
+                    if(root!=null){
+                        root.getTransferInfo().get(0).getSrcInfo().setSql(transfer_sql_temp);
+                    }else {
+                        logger.error("解析"+contentXML+"内容异常,无法继续...");
+                        return;
+                    }
+                    // ============ 步骤5.3 多线程导库
+                    List<TransferInfo> pojos = root.getTransferInfo();   // 得到所有要转换的节点信息
+                    TransferWithMultiThreadForMemory transferWithMultiThread = new TransferWithMultiThreadForMemory();
+                    // 执行最先需要执行的sql  ： 删除掉临时表的数据
+                    transferWithMultiThread.executePreInfo(root.getPreInfo());
 
-                        root = XmlUtil.pareseXmlToJavaBean(TransferTask.class.getResourceAsStream(contentXML));
-                        if(root!=null){
-                            root.getTransferInfo().get(0).getSrcInfo().setSql(content);   // 把第一个srcInfo的content设置为sql
-                        }else {
-                            logger.error("解析"+contentXML+"内容异常,无法继续...");
-                            return;
-                        }
+                    for (int dataCount = 0; dataCount < pojos.size(); dataCount++) {
+                        transferWithMultiThread.transfer(pojos.get(dataCount),
+                                job_execute_id,
+                                this.jobExecuteService,transferYear,transferMonth,false);
 
-                        // ============ 步骤5.3 多线程导库
-                        List<TransferInfo> pojos = root.getTransferInfo();   // 得到所有要转换的节点信息
-                        TransferWithMultiThreadForMemory transferWithMultiThread = new TransferWithMultiThreadForMemory();
-                        // 执行最先需要执行的sql  ： 删除掉临时表的数据
-                        transferWithMultiThread.executePreInfo(root.getPreInfo());
-
-                        for (int dataCount = 0; dataCount < pojos.size(); dataCount++) {
-                            transferWithMultiThread.transfer(pojos.get(dataCount),
-                                    job_execute_id,
-                                    this.jobExecuteService,transferYear,false);
-
-                            // 执行最后需要的回调sql  ： 把临时表的数据导入到本地真正的存放数据库的地方
-                            transferWithMultiThread.executeCallBack(root.getCallBackInfo(),
-                                    this.jobExecuteService,String.valueOf(transferYear),String.valueOf(transferMonth),
-                                    job_execute_id
-                                    );
-                        }
-
-
+                        // 执行最后需要的回调sql  ： 把临时表的数据导入到本地真正的存放数据库的地方
+                        transferWithMultiThread.executeCallBack(root.getCallBackInfo(),
+                                this.jobExecuteService,String.valueOf(transferYear),String.valueOf(transferMonth),
+                                job_execute_id
+                                );
+                    }
                 }
                 logger.info("同步"+transferYear+"年份的数据结束");
             }

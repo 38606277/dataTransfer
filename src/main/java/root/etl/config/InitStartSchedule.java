@@ -6,12 +6,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.spi.JobFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import root.etl.Service.IEtlJobService;
 import root.etl.Util.BaseJob;
 import root.etl.entity.EtlJob;
+import root.job.service.JobExecuteService;
+import root.job.service.JobService;
 
 
 import java.util.HashMap;
@@ -23,17 +26,36 @@ import java.util.Map;
  * @Date: 2018/11/27 18:06
  * @Description: 这个类用于启动springboot 时，加载作业，run方法自动执行。
  * 另外可以使用 ApplicationRunner
+ * ==> 我们在这里做有2个目的 ： 1. 加载要执行的定时任务 2. 做一个切点  打通spring容器跟quartz容器
  */
 @Component
 public class InitStartSchedule implements CommandLineRunner {
 
+    @Autowired
+    private MyJobFactory myJobFactory;
+
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("系统启动完成====================");
+        logger.info("系统启动完成====================");
+        // 对 scheduler  注入 myJobFactory ，让我们的job能调度 service 方法
+        // 通过SchedulerFactory获取一个调度器实例
+        SchedulerFactory sf = new StdSchedulerFactory();
+        Scheduler scheduler = sf.getScheduler();
+        // 如果不设置JobFactory，Service注入到Job会报空指针
+        scheduler.setJobFactory(myJobFactory);
+        // 启动调度器
+        scheduler.start();
     }
 
-   /* private static Logger logger = Logger.getLogger(InitStartSchedule.class);
+    private static Logger logger = Logger.getLogger(InitStartSchedule.class);
 
+
+    public static BaseJob getClass(String classname) throws Exception {
+        Class<?> c = Class.forName(classname);
+        return (BaseJob) c.newInstance();
+    }
+
+    /*
     @Autowired
     private IEtlJobService etlJobService;
 
