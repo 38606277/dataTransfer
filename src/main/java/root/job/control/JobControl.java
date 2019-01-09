@@ -365,6 +365,24 @@ public class JobControl extends RO {
         logger.info("重启任务完毕.");
         return SuccessMsg("1000","重启任务成功");
     }
+    /*查询一个Job*/
+    @RequestMapping(value = "/getJobById", produces = "text/plain;charset=UTF-8")
+    public String getJobById(@RequestBody String  paramJson) {
 
+        JSONObject jsonObject = JSON.parseObject(paramJson);
+        int id = jsonObject.getIntValue("id");
+
+        // 1. 非空校验
+        if (StringUtils.isBlank(String.valueOf(id))) {
+            return ErrorMsg("3000", "ID不能为空");
+        }
+
+        // 2. 数据库存在性校验
+        Map map = this.jobService.getJobById(id);
+        if (null == map) {
+            return ErrorMsg("3000", "任务ID为" + id + "的任务不存在!");
+        }
+        return SuccessMsg("1000",map);
+    }
 
 }

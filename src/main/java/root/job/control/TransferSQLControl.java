@@ -3,6 +3,7 @@ package root.job.control;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -86,5 +87,20 @@ public class TransferSQLControl extends RO {
         List<Map> mapList = this.transferService.getAllTransfer();
         return SuccessMsg("1000", mapList);
     }
-
+    /*查询一个getTransferById*/
+    @RequestMapping(value = "/getTransferById", produces = "text/plain;charset=UTF-8")
+    public String getJobById(@RequestBody String  paramJson) {
+        JSONObject jsonObject = JSON.parseObject(paramJson);
+        int id = jsonObject.getIntValue("id");
+        // 1. 非空校验
+        if (StringUtils.isBlank(String.valueOf(id))) {
+            return ErrorMsg("3000", "ID不能为空");
+        }
+        // 2. 数据库存在性校验
+        Map map = this.transferService.getTransferById(id);
+        if (null == map) {
+            return ErrorMsg("3000", "任务ID为" + id + "的任务不存在!");
+        }
+        return SuccessMsg("1000",map);
+    }
 }
