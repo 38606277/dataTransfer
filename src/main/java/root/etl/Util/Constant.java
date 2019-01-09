@@ -1,5 +1,8 @@
 package root.etl.Util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @Auther: pccw
  * @Date: 2018/11/27 11:22
@@ -7,6 +10,12 @@ package root.etl.Util;
  */
 public class Constant {
 
+    // 用来存放每个任务的执行进度
+    public static Map<String,Integer> PROCESSMAP = new HashMap<>();
+
+    public static final String TOTAL = "_TOTAL";  // 总数
+
+    public static final String DONE = "_DONE";    // 已经上传完的数
     /**
      * 定时任务状态
      */

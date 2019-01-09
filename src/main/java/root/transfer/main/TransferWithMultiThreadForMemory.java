@@ -4,6 +4,7 @@ package root.transfer.main;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import root.etl.Service.IEtlJobExecuteService;
+import root.etl.Util.Constant;
 import root.job.service.JobExecuteService;
 import root.transfer.pojo.SrcInfo;
 import root.transfer.pojo.TargetInfo;
@@ -45,6 +46,11 @@ public class TransferWithMultiThreadForMemory extends BaseTranser {
                         if(year>0 && month>0){
                             log.info("特别提醒*******************"+year+"年"+month+"月"+"需要导入的数据行数是"+ rs.getRow()+"**************");
                         }
+
+                        // 往 全局的 processMap 当中写
+                        int countAll = rs.getRow();
+                        Constant.PROCESSMAP.put(job_execute_id+Constant.TOTAL, countAll);   // 总数
+
                         BigDecimal result = new BigDecimal((double) rs.getRow()/5000).setScale(0, BigDecimal.ROUND_UP);  // 向上取整
                         int countSize = result.intValue();   // 所需要的总次数
                         log.info("此处导库总需线程调用次数为"+countSize);
@@ -76,11 +82,21 @@ public class TransferWithMultiThreadForMemory extends BaseTranser {
                             if (rs.getRow() % 5000 == 0) {
                                 service.submit(new InsertTaskForMemory(target.getDbName(), insertSql, list,everyProcess,jobExecuteService,job_execute_id));
                                 log.info("提交了" + rs.getRow() + "行");
+                                if(Constant.PROCESSMAP.get(job_execute_id+Constant.DONE) == null){
+                                    Constant.PROCESSMAP.put(job_execute_id+Constant.DONE,rs.getRow());   // 已经写入数
+                                }else {
+                                    // 累加
+                                    int tempRow =  Constant.PROCESSMAP.get(job_execute_id+Constant.DONE);
+                                    tempRow += rs.getRow();
+                                    Constant.PROCESSMAP.put(job_execute_id+Constant.DONE,tempRow);
+                                }
+
                                 list = new ArrayList<>();
                             }
                         }
                         // 把 剩余的不足5000 行的继续写一次
                         service.submit(new InsertTaskForMemory(target.getDbName(), insertSql, list,everyProcess,jobExecuteService,job_execute_id));
+                        Constant.PROCESSMAP.put(job_execute_id+Constant.DONE,countAll);
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
