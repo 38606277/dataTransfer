@@ -3,6 +3,7 @@ package root.job.control;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.quartz.JobKey;
@@ -59,12 +60,18 @@ public class JobControl extends RO {
         }
 
         // 2. 组装内存bounds
-        PageHelper.startPage(startIndex,perPage);
+        PageHelper.startPage(startIndex,perPage);   // 分页 紧贴着的下一个对象
 
-        List<Map> list ;
         try {
-            list = jobService.getAllJob();
-            return SuccessMsg("", list);
+        List<Map> list = jobService.getAllJob();
+            Map<String,Object> resultMap = new HashMap<>();
+            PageInfo<Map> pageInfo = new PageInfo<>(list);
+            //获得总条数
+            long total = pageInfo.getTotal();
+            resultMap.put("resultTotal",total);
+            resultMap.put("resultRows",list);
+
+            return SuccessMsg("", resultMap);
         } catch (Exception ex){
             ex.printStackTrace();
             return ExceptionMsg(ex.getMessage());
