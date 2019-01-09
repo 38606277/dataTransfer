@@ -37,7 +37,6 @@ public class TransferWithMultiThread extends BaseTranser {
 
                         // 初始化全局变量
                         List<List<Object>> list = new ArrayList<>();
-                        // IEtlJobExecuteService etlJobExecuteService = null;
 
                         // 1. 计算所需要的次数 ： rs 移动到最后面 ，确认总条数 ,  rs再移动回去，
                         rs.last();

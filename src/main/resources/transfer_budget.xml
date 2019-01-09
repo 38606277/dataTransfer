@@ -48,7 +48,6 @@
     <callBackInfo>
         <item>
             <dbName>form</dbName>
-            <!-- <<sql>delete from my_budget_depart_detail where budget_year=${budget_year}</sql>  -->
             <sql>insert into my_budget_depart_detail select * from my_transfer_user_detail</sql>
         </item>
     </callBackInfo>

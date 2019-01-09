@@ -12,11 +12,11 @@ public class Constant {
      */
     public static class JOB_STATE {
         /**
-         * 启用
+         * 启用; etl_job_execute 当中表示 成功
          */
         public static int YES = 1;
         /**
-         * 停用
+         * 停用; etl_job_execute 当中表示 成功失败
          */
         public static int NO = 0;
         /**

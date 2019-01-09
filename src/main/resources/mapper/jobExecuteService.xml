@@ -11,9 +11,9 @@
         values(
         ${job_id},
         <if test="begin_time == null">NULL</if>
-        <if test="begin_time != null">#{begin_time,jdbcType=DATE}</if>,
+        <if test="begin_time != null">#{begin_time,jdbcType=TIMESTAMP}</if>,
         <if test="end_time == null">NULL</if>
-        <if test="end_time != null">#{end_time,jdbcType=DATE}</if>,
+        <if test="end_time != null">#{end_time,jdbcType=TIMESTAMP}</if>,
         <if test="job_process == null">NULL</if>
         <if test="job_process != null">${job_process}</if>,
         <if test="job_status == null">NULL</if>
@@ -34,9 +34,9 @@
         update etl_job_execute
         <trim prefix="set" suffixOverrides=",">
             <if test="begin_time == null"></if>
-            <if test="begin_time != null">begin_time= #{begin_time,jdbcType=DATE},</if>
+            <if test="begin_time != null">begin_time= #{begin_time,jdbcType=TIMESTAMP},</if>
             <if test="end_time == null"></if>
-            <if test="end_time != null">end_time = #{end_time,jdbcType=DATE},</if>
+            <if test="end_time != null">end_time = #{end_time,jdbcType=TIMESTAMP},</if>
             <if test="job_process == null"></if>
             <if test="job_process != null">job_process = ${job_process},</if>
             <if test="job_status == null"></if>

@@ -6,15 +6,22 @@ import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import root.etl.Service.IEtlJobExecuteService;
 import root.etl.Service.IEtlJobService;
-import root.etl.Service.ITransferService;
 import root.etl.Util.BaseJob;
+import root.etl.Util.Constant;
 import root.etl.entity.EtlJob;
+import root.job.service.JobExecuteService;
+import root.job.service.JobService;
+import root.job.service.TransferService;
 import root.transfer.main.TransferWithMultiThread;
+import root.transfer.main.TransferWithMultiThreadForMemory;
 import root.transfer.pojo.Root;
 import root.transfer.pojo.TransferInfo;
 import root.transfer.util.XmlUtil;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,62 +30,60 @@ import java.util.Map;
  * @Date: 2018/11/29 15:56
  * @Description:
  *      导库的定时任务代码
- *      基于 etl_transfer 里面的xml 脚本
+ *      基于 etl_transfer 里面的xml 脚本 （通用性版本）
  */
 public class DefaultTask implements BaseJob {
 
     private static final Logger logger = Logger.getLogger(DefaultTask.class);
 
+    /*
+    编写逻辑 ：
+    1. 从 jobExecutionContext 当中得到 job_name  job_group ,
+        查询出 etl_job 信息
+    2. 通过 etl_job 当中的 transfer_id 关联查询出 transfer 信息，最重要的是 得到 transfer_content 内容
+    3. 利用 XML 跟 Bean 的转换API 把 transfer_content当中的内容转换到实体  root 上
+    4. 对 root 进行 解析完成导库工作 ，且在一开始导库的时候 写入信息到 etl_transfer 上去
+     */
     @Autowired
-    ITransferService transferService;
+    TransferService transferService;
 
     @Autowired
-    IEtlJobService etlJobService;
+    JobService jobService;
 
     @Autowired
-    IEtlJobExecuteService etlJobExecuteService;   // 得到此对象传递到后面方法当中去
+    JobExecuteService jobExecuteService;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 
-        // TODO :  动态实现任务处
-        /*
-           整改思想 ： job 只是承载定时任务执行的代码处，他与 trigger 是1 对多 的关系，
-           而 job 在我们页面暴露出来 的是需要添加一个  root.xx.xx 一个全限定名的 job 的类路径，
-           此时 这个  job 会包含  name , group_name , trigger 等，而我们的数据库会生成新的一条记录，
-           我们还需要做的是  在执行时机到来的时候  去数据库查询  [job-script-reletion] 表查询出真正的 path 位置 或者脚本
-           然后传递到下面去执行即可。
-         */
         JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();   // 得到 dataMap 以便进行 动态找到对应的sql
         JobDetail jobDetail = jobExecutionContext.getJobDetail();
         JobKey jobKey = jobDetail.getKey();
-        // String jobName = jobKey.getName()+jobKey.getGroup();    // 得到 对应的此Job的名称跟组别名，
 
-        // 查询 jobKey.getName()+jobKey.getGroup()  根据 组名跟 名称唯一确定 job 得到JOBID
-        EtlJob etlJob = etlJobService.getEtlJobByNameAndGroup(jobKey.getName(),jobKey.getGroup());
-        if(etlJob==null){
+        // 1. 从 jobExecutionContext 当中得到 job_name  job_group ,查询出 etl_job 信息
+        String jobName = jobKey.getName();
+        String jobGroup = jobKey.getGroup();
+        Map paramJobMap = new HashMap();
+        paramJobMap.put("job_name",jobName);
+        paramJobMap.put("job_group",jobGroup);
+        Map resultJobMap = this.jobService.getJobByParam(paramJobMap);
+        if(resultJobMap==null){
             logger.error("数据库查询不到job信息,无法继续执行");
            return;
         }
 
-        logger.info("开始抽取数据......");
-        // 得到当前的 Job的 name 跟 groupName ，关联查询正在执行的脚本， 组装成 root 节点
         String content = null;
         Root root = null;
-        try {// transfer.xml E:\GitCode\report\config\transfer.xml
-            //  root = XmlUtil.pareseXmlToJavaBean(new FileInputStream(path));
-            // 切换到数据库当中查询,不再使用 配置文件方式
-           //  SqlSession sqlSession = DbFactory.Open(DbFactory.FORM);
-            // Map<String, String> map = transferService.getTransferById("transfer.getTransferById", dataMap.getIntValue("transfer_id"));
-            Map<String, String> map = transferService.getTransferById(dataMap.getIntValue("transfer_id"));
-            content = map.get("transfer_content");
+        try {
+            // 2. 通过 etl_job 当中的 transfer_id 关联查询出 transfer 信息，最重要的是 得到 transfer_content 内容
+            Map transferMap = transferService.getTransferById(Integer.parseInt(resultJobMap.get("transfer_id").toString()));
+            content = transferMap.get("transfer_content").toString();
             if (StringUtils.isBlank(content)) {
                 throw new Exception("脚本内容为空,无法执行");
             }
-            // 利用 jaxb 转换对象
+            // 3. 利用 XML 跟 Bean 的转换API 把 transfer_content当中的内容转换到实体  root 上
             ByteArrayInputStream tInputStringStream = new ByteArrayInputStream(content.getBytes());
             root = XmlUtil.pareseXmlToJavaBean(tInputStringStream);
-            // content
         } catch (JobExecutionException e) {
             logger.error("解析transfer的内容出错,内容为:" + content);
             e.printStackTrace();
@@ -87,21 +92,39 @@ public class DefaultTask implements BaseJob {
             e.printStackTrace();
         }
         if (root == null) return;
-        List<TransferInfo> pojos = root.getTransferInfo();   // 得到所有要转换的节点信息
-        TransferWithMultiThread transferWithMultiThread = new TransferWithMultiThread();
 
+
+        // 4. 先往 job_execute 当中插入记录
+        int job_id = Integer.parseInt(resultJobMap.get("id").toString());
+        Map jobExecuteMap = new HashMap();
+        jobExecuteMap.put("job_id",job_id);
+        jobExecuteMap.put("job_status",Constant.JOB_STATE.STARTING);   // 导入中
+        jobExecuteMap.put("begin_time",new Date());
+        jobExecuteMap.put("job_process",new BigDecimal("0.00"));
+        this.jobExecuteService.addJobExecute(jobExecuteMap);
+
+        // 5. 开始转换工作
+        List<TransferInfo> pojos = root.getTransferInfo();   // 得到所有要转换的节点信息
+        TransferWithMultiThreadForMemory transferWithMultiThread = new TransferWithMultiThreadForMemory();
         try {
+            logger.info("开始抽取数据......");
             // 执行最先需要执行的sql
             transferWithMultiThread.executePreInfo(root.getPreInfo());
-
             for (int i = 0; i < pojos.size(); i++) {
-                transferWithMultiThread.transfer(pojos.get(i), etlJob.getId(), this.etlJobExecuteService,dataMap.getIntValue("year"),true);    // 对每一个 对象进行导库
-
+                transferWithMultiThread.transfer(pojos.get(i),
+                        Integer.parseInt(jobExecuteMap.get("id").toString()), this.jobExecuteService,
+                        0,0,false);    // 对每一个 对象进行导库
                 // 执行最后需要的回调sql
-                transferWithMultiThread.executeCallBack(root.getCallBackInfo(), etlJob.getId(), this.etlJobExecuteService,String.valueOf(dataMap.getIntValue("year")));
+                transferWithMultiThread.executeCallBack(root.getCallBackInfo(),this.jobExecuteService,null,null,
+                        Integer.parseInt(jobExecuteMap.get("id").toString()));
             }
         }catch (Exception e) {
             logger.error("执行回调sql出错：", e);
+            e.printStackTrace();
+            jobExecuteMap.put("job_process",new BigDecimal("100.00"));
+            jobExecuteMap.put("job_status",Constant.JOB_STATE.NO);   // 失败了
+            jobExecuteMap.put("job_failure_reason",e.getMessage().substring(0,499));  // 截取500 个字符
+            this.jobExecuteService.updateEtlJobExecute(jobExecuteMap);
         }
     }
 

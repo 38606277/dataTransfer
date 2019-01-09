@@ -21,4 +21,6 @@ public interface TransferService {
 
     List<Map> getAllTransfer();
 
+    Map getTransferById(int id);
+
 }
