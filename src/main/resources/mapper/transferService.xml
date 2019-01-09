@@ -31,7 +31,7 @@
     </delete>
 
     <select id="getAllTransfer" resultType="Map">
-        select transfer_id,transfer_content from etl_transfer
+        select transfer_id,transfer_name,transfer_content from etl_transfer
     </select>
 
     <!-- 根据指定的 transfer_id 得到对应的  transfer_content-->
