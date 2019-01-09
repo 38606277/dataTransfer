@@ -30,6 +30,13 @@
         where  id = #{id}
     </select>
 
+    <select id="getJobExecuteByJobId" parameterType="int" resultType="Map">
+        select id,job_id,job_status,begin_time,end_time,job_process,job_failure_reason
+        from etl_job_execute
+        where  job_id = #{job_id}
+        order by id desc
+    </select>
+
     <update id="updateEtlJobExecute" parameterType="Map">
         update etl_job_execute
         <trim prefix="set" suffixOverrides=",">

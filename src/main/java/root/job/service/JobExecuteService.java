@@ -15,4 +15,9 @@ public interface JobExecuteService {
     Map getJobExecuteById(int id);
 
     int updateEtlJobExecute(Map map);
+
+    /**
+     * 默认降序排列
+     */
+    List<Map> getJobExecuteByJobId(int job_id);
 }
