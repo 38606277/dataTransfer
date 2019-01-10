@@ -71,11 +71,15 @@ public class TransferSQLControl extends RO {
 
     @RequestMapping(value = "/deleteTransfer", produces = "text/plain;charset=UTF-8")
     public String deleteTransfer(@RequestBody String pJson) throws SQLException {
-        JSONArray jsonArray = JSON.parseArray(pJson);
+        JSONObject jsonObject = JSON.parseObject(pJson);
+        int transfer_id = jsonObject.getIntValue("id");
+       // JSONArray jsonArray = JSON.parseArray(pJson);
         try {
-            jsonArray.forEach(e ->
-                    this.transferService.deleteTransfer(Integer.parseInt(String.valueOf(e)))
-            );
+            this.transferService.deleteTransfer(transfer_id);
+
+//            jsonArray.forEach(e ->
+//                    this.transferService.deleteTransfer(transfer_id)
+//            );
         } catch (Exception e) {
             return ErrorMsg("3000", e.getMessage());
         }
