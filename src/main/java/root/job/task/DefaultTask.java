@@ -1,5 +1,7 @@
 package root.job.task;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.quartz.*;
@@ -9,21 +11,21 @@ import root.etl.Service.IEtlJobService;
 import root.etl.Util.BaseJob;
 import root.etl.Util.Constant;
 import root.etl.entity.EtlJob;
+import root.job.GlodbalVar;
 import root.job.service.JobExecuteService;
 import root.job.service.JobService;
 import root.job.service.TransferService;
 import root.transfer.main.TransferWithMultiThread;
 import root.transfer.main.TransferWithMultiThreadForMemory;
+import root.transfer.pojo.Item;
+import root.transfer.pojo.PreItem;
 import root.transfer.pojo.Root;
 import root.transfer.pojo.TransferInfo;
 import root.transfer.util.XmlUtil;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Auther: pccw
@@ -52,6 +54,9 @@ public class DefaultTask implements BaseJob {
 
     @Autowired
     JobExecuteService jobExecuteService;
+
+    @Autowired
+    GlodbalVar glodbalVar;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -93,6 +98,48 @@ public class DefaultTask implements BaseJob {
         }
         if (root == null) return;
 
+        // TODO: ====================== 带测试  -》 可以抽取出去放到 另一个方法里面。测试可以在 TEST类当中测试
+        // 3.2 GLOBAL  VAR   全局系统变量转换  （对root对象进行全局变量替换）
+        // 先要得到 当前 JOB类当中的 param 当中的参数
+        String jobParamStr = resultJobMap.get("job_param").toString();
+        if(StringUtils.isNotBlank(jobParamStr)){
+            JSONObject jobParamJosn = JSON.parseObject(jobParamStr);  // 反序列成JSON
+            String paramStr = jobParamJosn.getString("global_param");  // 里面用逗号进行分割
+            if(StringUtils.isNotBlank(paramStr)){
+                // =======转换 global 全局变量
+                String[] str = paramStr.split(",");
+                Map<String,Object> mapGlobal = this.glodbalVar.findTransferVars(Arrays.asList(str));
+                // 转换 preItem
+                for(PreItem preItem : root.getPreInfo().getItem()){
+                    List<String> preSQLList = new ArrayList<>();
+                    preItem.getSql().forEach(
+                            e -> preSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal,e))
+                    );
+                    preItem.setSql(preSQLList);
+                }
+                // 转换 transfer
+                for( TransferInfo transferInfo : root.getTransferInfo()){
+                    transferInfo.getSrcInfo().setSql(this.glodbalVar.replaceGlobalVar(mapGlobal,transferInfo.getSrcInfo().getSql()));
+                    List<String> targetSQLList = new ArrayList<>();
+                    transferInfo.getTargetInfo().getSql().forEach(
+                            e -> targetSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal,e))
+                    );
+                    transferInfo.getTargetInfo().setSql(targetSQLList);
+                }
+                // 转换 callback
+                for(Item item : root.getCallBackInfo().getItem()){
+                    List<String> preSQLList = new ArrayList<>(item.getSql().size());
+                    item.getSql().forEach(
+                            e -> preSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal,e))
+                    );
+                    item.setSql(preSQLList);
+                }
+            }else {
+                logger.info("此任务当中的SQL无需转换变量");
+            }
+        }else {
+            logger.info("此任务当中的SQL无需转换变量");
+        }
 
         // 4. 先往 job_execute 当中插入记录
         int job_id = Integer.parseInt(resultJobMap.get("id").toString());
