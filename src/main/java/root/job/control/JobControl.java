@@ -51,16 +51,16 @@ public class JobControl extends RO {
 
         // 1. 获取分页参数
         JSONObject obj = JSON.parseObject(pJson);
-        int startIndex = obj.getIntValue("pageNumd");
-        int perPage = obj.getIntValue("perPaged");
-        if (startIndex == 1 || startIndex == 0) {
-            startIndex = 0;
-        } else {
-            startIndex = (startIndex - 1) * perPage;
-        }
+        int startIndex = obj.getIntValue("pageNum");
+        int perPage = obj.getIntValue("perPage");
+//        if (startIndex == 1 || startIndex == 0) {
+//            startIndex = 0;
+//        } else {
+//            startIndex = (startIndex - 1) * perPage;
+//        }
 
         // 2. 组装内存bounds
-        PageHelper.startPage(startIndex,perPage);   // 分页 紧贴着的下一个对象
+        PageHelper.startPage(startIndex,perPage,true);   // 分页 紧贴着的下一个对象
 
         try {
         List<Map> list = jobService.getAllJob();

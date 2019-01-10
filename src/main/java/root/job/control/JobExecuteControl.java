@@ -2,6 +2,8 @@ package root.job.control;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,10 +33,20 @@ public class JobExecuteControl extends RO {
     public String getJobExecuteByJobId(@RequestBody String pJson) {
 
         JSONObject obj = JSON.parseObject(pJson);
+        int startIndex = obj.getIntValue("pageNumd");
+        int perPage = obj.getIntValue("perPaged");
+        // TODO ：  分页参数
+        PageHelper.startPage(startIndex,perPage,true);   // 分页 紧贴着的下一个对象
         int job_id = obj.getIntValue("job_id");
         List<Map> mapList = this.jobExecuteService.getJobExecuteByJobId(job_id);
+        Map<String,Object> resultMap = new HashMap<>();
+        PageInfo<Map> pageInfo = new PageInfo<>(mapList);
+        //获得总条数
+        long total = pageInfo.getTotal();
+        resultMap.put("resultTotal",total);
+        resultMap.put("resultRows",mapList);
 
-        return SuccessMsg("1000",mapList);
+        return SuccessMsg("", resultMap);
     }
 
     /**

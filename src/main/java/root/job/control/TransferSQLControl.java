@@ -3,6 +3,8 @@ package root.job.control;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -87,9 +89,22 @@ public class TransferSQLControl extends RO {
     }
 
     @RequestMapping(value = "/getAllTransfer", produces = "text/plain;charset=UTF-8")
-    public String getAllTransfer() {
+    public String getAllTransfer(@RequestBody String pJson) {
+
+        JSONObject obj = JSON.parseObject(pJson);
+        int startIndex = obj.getIntValue("pageNum");
+        int perPage = obj.getIntValue("perPage");
+        // TODO ：  分页参数
+        PageHelper.startPage(startIndex,perPage,true);   // 分页 紧贴着的下一个对象
         List<Map> mapList = this.transferService.getAllTransfer();
-        return SuccessMsg("1000", mapList);
+        Map<String,Object> resultMap = new HashMap<>();
+        PageInfo<Map> pageInfo = new PageInfo<>(mapList);
+        //获得总条数
+        long total = pageInfo.getTotal();
+        resultMap.put("resultTotal",total);
+        resultMap.put("resultRows",mapList);
+
+        return SuccessMsg("", resultMap);
     }
     /*查询一个getTransferById*/
     @RequestMapping(value = "/getTransferById", produces = "text/plain;charset=UTF-8")
