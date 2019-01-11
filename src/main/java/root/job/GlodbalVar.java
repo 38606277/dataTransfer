@@ -169,7 +169,7 @@ public class GlodbalVar {
      */
     public String replaceGlobalVar(Map<String,Object> map,String sql){
 
-        if(StringUtils.isNotBlank(sql)){
+        if(StringUtils.isBlank(sql)){
             return null;
         }
 
