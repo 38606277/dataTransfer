@@ -45,6 +45,9 @@ public class TransferInfo {
     @XmlAttribute(name = "backup")
     protected Boolean backup;
 
+    @XmlAttribute(name = "createtable")
+    protected Boolean createtable=false;
+
     /**
      * 获取srcInfo属性的值。
      *
@@ -109,4 +112,28 @@ public class TransferInfo {
         this.backup = value;
     }
 
+
+    /**
+     * createTable。
+     *
+     * @return possible object is
+     * {@link Boolean }
+     */
+    public boolean isCreatetable() {
+        if (createtable == null) {
+            return false;
+        } else {
+            return createtable;
+        }
+    }
+
+    /**
+     * createTable。
+     *
+     * @param value allowed object is
+     *              {@link Boolean }
+     */
+    public void setCreatetable(Boolean value) {
+        this.createtable = value;
+    }
 }

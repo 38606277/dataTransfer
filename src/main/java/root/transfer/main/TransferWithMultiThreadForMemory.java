@@ -30,9 +30,9 @@ public class TransferWithMultiThreadForMemory extends BaseTranser {
         int count = 0;
         try {
             new DbHelper().executeQuery(t.getSrcInfo(), rs -> {
-//                if(bool){
+                if(bool){
                     DbHelper.createTableInDB(rs, t,year);  // 不用创建表了，已经创建了
-//                }
+                }
                 ExecutorService service = Executors.newFixedThreadPool(InsertTask.queueSize);
                 try {
                     if (rs != null) {
