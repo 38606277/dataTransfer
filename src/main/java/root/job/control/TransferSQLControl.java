@@ -106,6 +106,14 @@ public class TransferSQLControl extends RO {
 
         return SuccessMsg("", resultMap);
     }
+
+    @RequestMapping(value = "/getAllTransferList", produces = "text/plain;charset=UTF-8")
+    public String getAllTransferList() {
+
+        List<Map> mapList = this.transferService.getAllTransfer();
+
+        return SuccessMsg("1000", mapList);
+    }
     /*查询一个getTransferById*/
     @RequestMapping(value = "/getTransferById", produces = "text/plain;charset=UTF-8")
     public String getJobById(@RequestBody String  paramJson) {
