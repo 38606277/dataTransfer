@@ -164,11 +164,12 @@ public class DefaultTask implements BaseJob {
             for (int i = 0; i < pojos.size(); i++) {
                 transferWithMultiThread.transfer(pojos.get(i),
                         Integer.parseInt(jobExecuteMap.get("id").toString()), this.jobExecuteService,
-                        0,0,false);    // 对每一个 对象进行导库
+                        0,0,pojos.get(i).isCreatetable());    // 对每一个 对象进行导库
+            }
                 // 执行最后需要的回调sql
                 transferWithMultiThread.executeCallBack(root.getCallBackInfo(),this.jobExecuteService,null,null,
                         Integer.parseInt(jobExecuteMap.get("id").toString()));
-            }
+
         }catch (Exception e) {
             logger.error("执行回调sql出错：", e);
             e.printStackTrace();
