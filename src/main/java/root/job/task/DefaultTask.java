@@ -101,43 +101,47 @@ public class DefaultTask implements BaseJob {
         // TODO: ====================== 带测试  -》 可以抽取出去放到 另一个方法里面。测试可以在 TEST类当中测试
         // 3.2 GLOBAL  VAR   全局系统变量转换  （对root对象进行全局变量替换）
         // 先要得到 当前 JOB类当中的 param 当中的参数
-        String jobParamStr = resultJobMap.get("job_param").toString();
-        if(StringUtils.isNotBlank(jobParamStr)){
-            JSONObject jobParamJosn = JSON.parseObject(jobParamStr);  // 反序列成JSON
-            String paramStr = jobParamJosn.getString("global_param");  // 里面用逗号进行分割
-            if(StringUtils.isNotBlank(paramStr)){
-                // =======转换 global 全局变量
-                String[] str = paramStr.split(",");
-                Map<String,Object> mapGlobal = this.glodbalVar.findTransferVars(Arrays.asList(str));
-                // 转换 preItem
-                for(PreItem preItem : root.getPreInfo().getItem()){
-                    List<String> preSQLList = new ArrayList<>();
-                    preItem.getSql().forEach(
-                            e -> preSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal,e))
-                    );
-                    preItem.setSql(preSQLList);
+        if(null!=resultJobMap.get("job_param") &&  !resultJobMap.get("job_param").equals("")) {
+            String jobParamStr = resultJobMap.get("job_param").toString();
+            if (StringUtils.isNotBlank(jobParamStr)) {
+                JSONObject jobParamJosn = JSON.parseObject(jobParamStr);  // 反序列成JSON
+                String paramStr = jobParamJosn.getString("global_param");  // 里面用逗号进行分割
+                if (StringUtils.isNotBlank(paramStr)) {
+                    // =======转换 global 全局变量
+                    String[] str = paramStr.split(",");
+                    Map<String, Object> mapGlobal = this.glodbalVar.findTransferVars(Arrays.asList(str));
+                    // 转换 preItem
+                    for (PreItem preItem : root.getPreInfo().getItem()) {
+                        List<String> preSQLList = new ArrayList<>();
+                        preItem.getSql().forEach(
+                                e -> preSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal, e))
+                        );
+                        preItem.setSql(preSQLList);
+                    }
+                    // 转换 transfer
+                    for (TransferInfo transferInfo : root.getTransferInfo()) {
+                        transferInfo.getSrcInfo().setSql(this.glodbalVar.replaceGlobalVar(mapGlobal, transferInfo.getSrcInfo().getSql()));
+                        List<String> targetSQLList = new ArrayList<>();
+                        transferInfo.getTargetInfo().getSql().forEach(
+                                e -> targetSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal, e))
+                        );
+                        transferInfo.getTargetInfo().setSql(targetSQLList);
+                    }
+                    // 转换 callback
+                    for (Item item : root.getCallBackInfo().getItem()) {
+                        List<String> preSQLList = new ArrayList<>(item.getSql().size());
+                        item.getSql().forEach(
+                                e -> preSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal, e))
+                        );
+                        item.setSql(preSQLList);
+                    }
+                } else {
+                    logger.info("此任务当中的SQL无需转换变量");
                 }
-                // 转换 transfer
-                for( TransferInfo transferInfo : root.getTransferInfo()){
-                    transferInfo.getSrcInfo().setSql(this.glodbalVar.replaceGlobalVar(mapGlobal,transferInfo.getSrcInfo().getSql()));
-                    List<String> targetSQLList = new ArrayList<>();
-                    transferInfo.getTargetInfo().getSql().forEach(
-                            e -> targetSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal,e))
-                    );
-                    transferInfo.getTargetInfo().setSql(targetSQLList);
-                }
-                // 转换 callback
-                for(Item item : root.getCallBackInfo().getItem()){
-                    List<String> preSQLList = new ArrayList<>(item.getSql().size());
-                    item.getSql().forEach(
-                            e -> preSQLList.add(this.glodbalVar.replaceGlobalVar(mapGlobal,e))
-                    );
-                    item.setSql(preSQLList);
-                }
-            }else {
+            } else {
                 logger.info("此任务当中的SQL无需转换变量");
             }
-        }else {
+        } else {
             logger.info("此任务当中的SQL无需转换变量");
         }
 

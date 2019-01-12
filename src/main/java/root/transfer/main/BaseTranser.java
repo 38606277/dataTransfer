@@ -24,7 +24,11 @@ public class BaseTranser {
 
     // 导库前执行的sql
     public void executePreInfo(PreInfo preInfo){
-        if(preInfo == null && preInfo.getItem()==null) return;
+      //  if(preInfo == null && preInfo.getItem()==null) return;
+        if(preInfo == null){
+            log.info("导库前没有可执行sql...");
+            return;
+        }
         log.info("开始执行导库前sql...");
         try {
             for(PreItem preItem : preInfo.getItem()){
