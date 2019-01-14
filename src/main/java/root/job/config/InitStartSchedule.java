@@ -63,7 +63,7 @@ public class InitStartSchedule implements CommandLineRunner {
         for (Map resultMap : mapList) {
             String job_name = resultMap.get("job_name").toString();
             String job_group = resultMap.get("job_group").toString();
-            String job_param_json = resultMap.get("job_param").toString();
+            String job_param_json = resultMap.get("job_param")==null?"":resultMap.get("job_param").toString();
             String job_cron = resultMap.get("job_cron").toString();
             //构建job信息
             JSONObject jobParamJosn = JSON.parseObject(job_param_json);
