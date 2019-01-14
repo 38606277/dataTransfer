@@ -1,9 +1,11 @@
 package root.job.control;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.mysql.cj.x.json.JsonArray;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.quartz.JobKey;
@@ -12,22 +14,16 @@ import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import root.common.RO;
-import root.etl.Util.Constant;
-import root.etl.Util.SchedulerUtil;
-import root.etl.exception.BizException;
+import root.job.Util.Constant;
+import root.job.Util.SchedulerUtil;
 import root.job.service.JobExecuteService;
 import root.job.service.JobService;
-import root.job.task.TransferTask;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +132,7 @@ public class JobControl extends RO {
            String id = String.valueOf(paramMap.get("id"));
            if(StringUtils.isNotBlank(id)){
                try {
-                   // 对 param 参数解析
+                   // 对 param 参数解析 ：  --》 如果 task_path 指定为1 则是特殊的任务类（移动BUG），若不是的话则是默认的导库逻辑
                    if(Constant.TASK_CLASS.TRANSFER_VALUE.equals(jobParamJosn.getString("task_path"))){
                        SchedulerUtil.addJob(Constant.TASK_CLASS.TRANSFER_TASK_CLASS_PATH,job_name, job_group, job_cron, jobDataMap);   // 在当前的 scheduler 管理当中加上这个任务
                    }else {
@@ -244,6 +240,39 @@ public class JobControl extends RO {
         return SuccessMsg("1000","删除定时任务状态成功");
     }
 
+
+    /*删除一个QuartzJob*/
+    @RequestMapping(value = "/deleteJobBatch", produces = "text/plain;charset=UTF-8")
+    public String deleteJobBatch(@RequestBody String paramJson) {
+
+        logger.info("删除定时任务状态开始... ...");
+        JSONArray jsonArray = JSON.parseArray(paramJson);
+        int id;
+        Map resultMap;
+        try {
+            SchedulerFactory sf = new StdSchedulerFactory();
+            Scheduler scheduler = sf.getScheduler();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                id = Integer.parseInt(jsonArray.get(i).toString());
+                resultMap = this.jobService.getJobById(id);
+                if(resultMap != null){
+                    this.jobService.deleteJobById(id);
+                    JobKey jobKey = new JobKey(resultMap.get("job_name").toString(), resultMap.get("job_group").toString());
+                    if(scheduler.checkExists(jobKey)){
+                        SchedulerUtil.deleteJobForMemory(resultMap.get("job_name").toString(), resultMap.get("job_group").toString());
+                    }
+                }
+            }
+        }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+            logger.error("变更任务异常：" + e.getMessage());
+            return ErrorMsg("3000", "删除任务异常" + e.getMessage());
+        }
+
+        logger.info("删除定时任务状态成功");
+        return SuccessMsg("1000","删除定时任务状态成功");
+    }
+
     /*立即执行一个QuartzJob*/
     @RequestMapping(value = "/executeJob", produces = "text/plain;charset=UTF-8")
     public String executeJob(@RequestBody String paramJson) {
@@ -337,6 +366,44 @@ public class JobControl extends RO {
         logger.info("终止执行成功");
         return SuccessMsg("1000","终止执行成功");
     }
+
+
+    /*   批量暂停QuartzJob*/
+    @RequestMapping(value = "/pauseJobBatch", produces = "text/plain;charset=UTF-8")
+    public String pauseJobBatch(@RequestBody String  paramJson) {
+
+        logger.info("批量停止job");
+        JSONArray jsonArray = JSON.parseArray(paramJson);
+        int id;
+        String job_name;
+        String job_group;
+        try {
+            SchedulerFactory sf = new StdSchedulerFactory();
+            Scheduler scheduler = sf.getScheduler();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                id = Integer.parseInt(jsonArray.get(i).toString());
+                Map map = this.jobService.getJobById(id);
+                if(map != null){
+                    map.put("job_status", Constant.JOB_STATE.NO);
+                    job_name = map.get("job_name").toString();
+                    job_group = map.get("job_group").toString();
+                    this.jobService.updateJobById(map);
+                    JobKey jobKey = new JobKey(job_name,job_group);
+                    if(scheduler.checkExists(jobKey)){
+                        scheduler.pauseJob(jobKey);
+                    }
+                }
+            }
+        }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+            logger.error("终止任务异常：" + e.getMessage());
+            return ErrorMsg("3000", "终止任务异常" + e.getMessage());
+        }
+
+        logger.info("终止执行成功");
+        return SuccessMsg("1000","终止执行成功");
+    }
+
 
     /*还原一个QuartzJob*/
     @RequestMapping(value = "/resumeJob", produces = "text/plain;charset=UTF-8")

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import root.common.RO;
-import root.etl.Util.Constant;
+import root.job.Util.Constant;
 import root.job.service.JobExecuteService;
 
 import java.util.HashMap;

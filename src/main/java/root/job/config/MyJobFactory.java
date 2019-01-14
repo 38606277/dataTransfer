@@ -1,4 +1,4 @@
-package root.etl.config;
+package root.job.config;
 
 import org.quartz.spi.TriggerFiredBundle;
 import org.springframework.beans.factory.annotation.Autowired;

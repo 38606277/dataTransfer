@@ -1,21 +1,17 @@
-package root.etl.config;
+package root.job.config;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
-import org.quartz.spi.JobFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import root.etl.Service.IEtlJobService;
-import root.etl.Util.BaseJob;
-import root.etl.entity.EtlJob;
-import root.job.service.JobExecuteService;
+import root.job.Util.BaseJob;
+import root.job.Util.Constant;
 import root.job.service.JobService;
-
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,12 +27,27 @@ import java.util.Map;
 @Component
 public class InitStartSchedule implements CommandLineRunner {
 
+    private static Logger logger = Logger.getLogger(InitStartSchedule.class);
+
     @Autowired
     private MyJobFactory myJobFactory;
+
+    @Autowired
+    JobService jobService;
 
     @Override
     public void run(String... args) throws Exception {
         logger.info("系统启动完成====================");
+
+        //查询job状态为启用的
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("job_status", Constant.JOB_STATE.YES);
+        // 1. 查询数据库是否有要执行的任务
+       List<Map> mapList = jobService.getJobListByParam(paramMap);
+        if (null == mapList || mapList.size() == 0) {
+            logger.info("系统启动，没有需要执行的任务... ...");
+        }
+
         // 对 scheduler  注入 myJobFactory ，让我们的job能调度 service 方法
         // 通过SchedulerFactory获取一个调度器实例
         SchedulerFactory sf = new StdSchedulerFactory();
@@ -45,10 +56,47 @@ public class InitStartSchedule implements CommandLineRunner {
         scheduler.setJobFactory(myJobFactory);
         // 启动调度器
         scheduler.start();
+
+        int i = 0;
+        int j = 0;
+        // 启动状态为1的任务
+        for (Map resultMap : mapList) {
+            String job_name = resultMap.get("job_name").toString();
+            String job_group = resultMap.get("job_group").toString();
+            String job_param_json = resultMap.get("job_param").toString();
+            String job_cron = resultMap.get("job_cron").toString();
+            //构建job信息
+            JSONObject jobParamJosn = JSON.parseObject(job_param_json);
+            JobDetail jobDetail;
+            if(jobParamJosn !=null && Constant.TASK_CLASS.TRANSFER_VALUE.equals(jobParamJosn.getString("task_path"))){
+                jobDetail = JobBuilder.newJob(getClass(Constant.TASK_CLASS.TRANSFER_TASK_CLASS_PATH).getClass()).
+                        withIdentity(job_name, job_group).build();
+                i++;
+            }  else {
+                jobDetail = JobBuilder.newJob(getClass(Constant.TASK_CLASS.DEFAULT_TASK_CLASS_PATH).getClass()).
+                        withIdentity(job_name, job_group).build();
+                j++;
+            }  //jobParamJosn.getString("task_path"))
+
+            //表达式调度构建器(即任务执行的时间)
+            CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(job_cron);
+            //按新的cronExpression表达式构建一个新的trigger
+            CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(job_name, job_group)
+                    .withSchedule(scheduleBuilder).startNow().build();
+            // 任务不存在的时候才添加
+            if (!scheduler.checkExists(jobDetail.getKey())) {
+                try {
+                    scheduler.scheduleJob(jobDetail, trigger);
+                } catch (SchedulerException e) {
+                    logger.info("\n创建定时任务失败" + e);
+                    throw new Exception("创建定时任务失败");
+                }
+            }
+        }
+
+        logger.info("启动了"+i+"个移动转换任务!==============");
+        logger.info("启动了"+j+"个通用转换任务!==============");
     }
-
-    private static Logger logger = Logger.getLogger(InitStartSchedule.class);
-
 
     public static BaseJob getClass(String classname) throws Exception {
         Class<?> c = Class.forName(classname);
@@ -56,28 +104,12 @@ public class InitStartSchedule implements CommandLineRunner {
     }
 
     /*
-    @Autowired
-    private IEtlJobService etlJobService;
 
-    @Autowired
-    private MyJobFactory myJobFactory;
 
     @Override
     public void run(String... args) throws Exception {
 
-        *//**
-         * 用于程序启动时加载定时任务，并执行已启动的定时任务(只会执行一次，在程序启动完执行)
-         *//*
-        //查询job状态为启用的
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("jobStatus", "1");
 
-        // 1. 查询数据库是否有要执行的任务
-        PageHelper.startPage(0,0);
-        List<EtlJob> jobList = this.etlJobService.querySysJobList(map);
-        if (null == jobList || jobList.size() == 0) {
-            logger.info("系统启动，没有需要执行的任务... ...");
-        }
 
         // 2. 对 scheduler  注入 myJobFactory ，让我们的job能调度 service 方法
         // 通过SchedulerFactory获取一个调度器实例

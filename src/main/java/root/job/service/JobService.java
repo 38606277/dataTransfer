@@ -29,6 +29,8 @@ public interface JobService {
 
     Map<String,Object> getJobByParam(Map map);
 
+    List<Map> getJobListByParam(Map map);
+
     int addJob(Map map);
 
     Map getJobById(int id);

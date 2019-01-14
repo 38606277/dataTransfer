@@ -6,16 +6,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import root.etl.Service.IEtlJobExecuteService;
-import root.etl.Service.IEtlJobService;
-import root.etl.Util.BaseJob;
-import root.etl.Util.Constant;
-import root.etl.entity.EtlJob;
 import root.job.GlodbalVar;
+import root.job.Util.BaseJob;
+import root.job.Util.Constant;
 import root.job.service.JobExecuteService;
 import root.job.service.JobService;
 import root.job.service.TransferService;
-import root.transfer.main.TransferWithMultiThread;
 import root.transfer.main.TransferWithMultiThreadForMemory;
 import root.transfer.pojo.Item;
 import root.transfer.pojo.PreItem;
@@ -98,7 +94,6 @@ public class DefaultTask implements BaseJob {
         }
         if (root == null) return;
 
-        // TODO: ====================== 带测试  -》 可以抽取出去放到 另一个方法里面。测试可以在 TEST类当中测试
         // 3.2 GLOBAL  VAR   全局系统变量转换  （对root对象进行全局变量替换）
         // 先要得到 当前 JOB类当中的 param 当中的参数
         if(null!=resultJobMap.get("job_param") &&  !resultJobMap.get("job_param").equals("")) {

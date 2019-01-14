@@ -29,7 +29,29 @@
             and id = #{id,jdbcType=INTEGER}
         </if>
         <if test="job_status != null">
-            and job_status = #{job_status,jdbcType=VARCHAR}
+            and job_status = #{job_status,jdbcType=INTEGER}
+        </if>
+        <if test="job_cron != null">
+            and job_cron like concat('%',#{job_cron},'%')
+        </if>
+        <if test="job_group != null">
+            and job_group = #{job_group,jdbcType=VARCHAR}
+        </if>
+        <if test="job_name != null">
+            and job_name = #{job_name,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <!-- 根据条件查询定时任务列表  -->
+    <select id="getJobListByParam" parameterType="Map" resultType="Map">
+        select
+        <include refid="Base_Column_List"/>
+        from etl_job where 1=1
+        <if test="id != null">
+            and id = #{id,jdbcType=INTEGER}
+        </if>
+        <if test="job_status != null">
+            and job_status = #{job_status,jdbcType=INTEGER}
         </if>
         <if test="job_cron != null">
             and job_cron like concat('%',#{job_cron},'%')

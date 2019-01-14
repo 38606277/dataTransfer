@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import root.etl.Service.IEtlJobExecuteService;
 import root.etl.Service.IEtlJobService;
 import root.etl.Service.ITransferService;
-import root.etl.Util.BaseJob;
+import root.job.Util.BaseJob;
 import root.etl.entity.EtlJob;
 import root.transfer.main.TransferWithMultiThread;
 import root.transfer.pojo.Root;

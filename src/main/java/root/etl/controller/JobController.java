@@ -14,10 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import root.configuration.RO;
 import root.etl.Service.IEtlJobExecuteService;
 import root.etl.Service.IEtlJobService;
-import root.etl.Util.Constant;
-import root.etl.Util.SchedulerUtil;
+import root.job.Util.Constant;
+import root.job.Util.SchedulerUtil;
 import root.etl.entity.EtlJob;
-import root.etl.entity.EtlJobExecute;
 import root.etl.entity.LayuiData;
 import root.etl.exception.BizException;
 

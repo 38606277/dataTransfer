@@ -1,10 +1,8 @@
 package root.transfer.main;
 
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import root.etl.Service.IEtlJobExecuteService;
-import root.etl.Util.Constant;
+import root.job.Util.Constant;
 import root.job.service.JobExecuteService;
 import root.transfer.pojo.SrcInfo;
 import root.transfer.pojo.TargetInfo;

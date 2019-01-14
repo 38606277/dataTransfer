@@ -1,4 +1,4 @@
-package root.etl.config;
+package root.job.config;
 
 import org.quartz.Job;
 import org.quartz.Scheduler;

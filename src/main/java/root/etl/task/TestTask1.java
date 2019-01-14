@@ -4,7 +4,7 @@ import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
-import root.etl.Util.BaseJob;
+import root.job.Util.BaseJob;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

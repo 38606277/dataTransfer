@@ -29,7 +29,7 @@ public class GlodbalVar {
 
     private final String TYPE_TWO = "java";
 
-    private final String PREFIX = "${";   // 前缀
+    private final String PREFIX = "${";   // 前缀   ${curent_year}
 
     private final String SUFFIX = "}";  // 后缀
 
