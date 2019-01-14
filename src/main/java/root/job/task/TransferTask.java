@@ -36,7 +36,7 @@ public class TransferTask implements BaseJob {
 
     private  final String contentXML = "/transfer_budget.xml";     // 导库源xml存放处
 
-    private final int[] yearArray = {2010,2011,2012,2013,2014,2015,2016,2017,2018};
+    private final int[] yearArray = {2018,2017,2016,2015,2014,2013,2012,2011,2010};
 
     private final int[] monthArray = {1,2,3,4,5,6,7,8,9,10,11,12};
 

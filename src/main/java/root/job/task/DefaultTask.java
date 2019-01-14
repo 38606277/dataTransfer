@@ -57,7 +57,7 @@ public class DefaultTask implements BaseJob {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 
-        JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();   // 得到 dataMap 以便进行 动态找到对应的sql
+        // JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();   // 得到 dataMap 以便进行 动态找到对应的sql
         JobDetail jobDetail = jobExecutionContext.getJobDetail();
         JobKey jobKey = jobDetail.getKey();
 
@@ -96,7 +96,7 @@ public class DefaultTask implements BaseJob {
 
         // 3.2 GLOBAL  VAR   全局系统变量转换  （对root对象进行全局变量替换）
         // 先要得到 当前 JOB类当中的 param 当中的参数
-        if(null!=resultJobMap.get("job_param") &&  !resultJobMap.get("job_param").equals("")) {
+        if(null != resultJobMap.get("job_param") &&  !resultJobMap.get("job_param").equals("")) {
             String jobParamStr = resultJobMap.get("job_param").toString();
             if (StringUtils.isNotBlank(jobParamStr)) {
                 JSONObject jobParamJosn = JSON.parseObject(jobParamStr);  // 反序列成JSON
