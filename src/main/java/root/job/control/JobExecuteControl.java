@@ -1,15 +1,22 @@
 package root.job.control;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerFactory;
+import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import root.common.RO;
 import root.job.Util.Constant;
+import root.job.Util.SchedulerUtil;
 import root.job.service.JobExecuteService;
 
 import java.util.HashMap;
@@ -66,4 +73,22 @@ public class JobExecuteControl extends RO {
 
     }
 
+
+    /*删除一个QuartzJob*/
+    @RequestMapping(value = "/deleteJobExecuteBatch", produces = "text/plain;charset=UTF-8")
+    public String deleteJobExecuteBatch(@RequestBody String paramJson) {
+
+        JSONArray jsonArray = JSON.parseArray(paramJson);
+        int id;
+        try {
+            for (int i = 0; i < jsonArray.size(); i++) {
+                id = Integer.parseInt(jsonArray.get(i).toString());
+                this.jobExecuteService.deleteEtlJobExecute(id);
+            }
+        }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+            return ErrorMsg("3000", "删除任务日志异常" + e.getMessage());
+        }
+        return SuccessMsg("1000","删除定时任务日志成功");
+    }
 }

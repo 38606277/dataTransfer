@@ -37,6 +37,11 @@
         order by id desc
     </select>
 
+
+    <delete id="deleteEtlJobExecute" parameterType="int">
+        delete from etl_job_execute where id=#{id}
+    </delete>
+
     <update id="updateEtlJobExecute" parameterType="Map">
         update etl_job_execute
         <trim prefix="set" suffixOverrides=",">

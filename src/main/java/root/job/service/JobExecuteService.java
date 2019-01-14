@@ -20,4 +20,6 @@ public interface JobExecuteService {
      * 默认降序排列
      */
     List<Map> getJobExecuteByJobId(int job_id);
+
+    int deleteEtlJobExecute(int id);
 }
