@@ -36,6 +36,14 @@ public class RestWebMvcConfigurationSupport extends WebMvcConfigurationSupport {
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer.favorPathExtension(false);
     }
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/report/static/**").addResourceLocations("file:"+AppConstants.getStaticReportPath()+ File.separator);
+        registry.addResourceHandler("/report/dynamic/**").addResourceLocations("file:"+AppConstants.getDynamicReportPath()+File.separator);
+        registry.addResourceHandler("/ibas2/**").addResourceLocations("file:"+AppConstants.getClientInstallFile()+File.separator);
+        registry.addResourceHandler("/**").addResourceLocations("file:"+AppConstants.getReport2()+File.separator);
+        registry.addResourceHandler("/app/**").addResourceLocations("file:"+AppConstants.getPhoneapp()+File.separator);
+    }
 
     @Override
     protected void addCorsMappings(CorsRegistry registry) {
