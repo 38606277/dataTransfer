@@ -40,6 +40,13 @@ public class TransferWithMultiThread extends BaseTranser {
 
                         // 1. 计算所需要的次数 ： rs 移动到最后面 ，确认总条数 ,  rs再移动回去，
                         rs.last();
+
+                        int tempCountAll = rs.getRow();
+                        if(tempCountAll == 0) {
+                            log.warn("当前数据为0行,无需导入");
+                            return;
+                        }
+
                         BigDecimal result = new BigDecimal((double) rs.getRow()/5000).setScale(0, BigDecimal.ROUND_UP);  // 向上取整
                         int countSize = result.intValue();   // 所需要的总次数
                         log.info("此处导库总需线程调用次数为"+countSize);

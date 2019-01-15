@@ -77,5 +77,14 @@ public class Constant {
         public static String DEFAULT_VALUE = "2";
 
         public static String DEFAULT_TASK_CLASS_PATH = "root.job.task.DefaultTask";
+
+
+        // 按照 depart_id + year 导入历史数据
+        public static String TRANSFER_DEPART_VALUE = "3";
+        public static String TRANSFER_DEPART_TASK_CLASS_PATH = "root.job.task.TransferTaskByDepartment";
+
+        // root.job.task.TransferTaskByEtlXml
+        public static String TRANSFER_DEFAULT_DEPART_VALUE = "4";
+        public static String TRANSFER_DEFAULT_DEPART_TASK_CLASS_PATH = "root.job.task.TransferTaskByEtlXml";
     }
 }

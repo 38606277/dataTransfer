@@ -23,6 +23,7 @@ import root.job.Util.Constant;
 import root.job.Util.SchedulerUtil;
 import root.job.service.JobExecuteService;
 import root.job.service.JobService;
+import root.job.task.TransferTaskByDepartment;
 
 import java.util.HashMap;
 import java.util.List;
@@ -135,7 +136,12 @@ public class JobControl extends RO {
                    // 对 param 参数解析 ：  --》 如果 task_path 指定为1 则是特殊的任务类（移动BUG），若不是的话则是默认的导库逻辑
                    if(Constant.TASK_CLASS.TRANSFER_VALUE.equals(jobParamJosn.getString("task_path"))){
                        SchedulerUtil.addJob(Constant.TASK_CLASS.TRANSFER_TASK_CLASS_PATH,job_name, job_group, job_cron, jobDataMap);   // 在当前的 scheduler 管理当中加上这个任务
-                   }else {
+                   } else if(Constant.TASK_CLASS.TRANSFER_DEPART_VALUE.equals(jobParamJosn.getString("task_path"))){
+                       // TransferTaskByDepartment
+                       SchedulerUtil.addJob(Constant.TASK_CLASS.TRANSFER_DEPART_TASK_CLASS_PATH,job_name, job_group, job_cron, jobDataMap);
+                   }else if(Constant.TASK_CLASS.TRANSFER_DEFAULT_DEPART_VALUE.equals(jobParamJosn.getString("task_path"))){
+                       SchedulerUtil.addJob(Constant.TASK_CLASS.TRANSFER_DEFAULT_DEPART_TASK_CLASS_PATH,job_name, job_group, job_cron, jobDataMap);
+                   } else {
                        SchedulerUtil.addJob(Constant.TASK_CLASS.DEFAULT_TASK_CLASS_PATH,job_name, job_group, job_cron, jobDataMap);   // 在当前的 scheduler 管理当中加上这个任务
                    }
                } catch (Exception e) {

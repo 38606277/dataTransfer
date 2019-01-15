@@ -11,16 +11,14 @@ import root.job.service.JobService;
 import root.transfer.main.TransferWithMultiThreadForMemory;
 import root.transfer.pojo.Root;
 import root.transfer.pojo.TransferInfo;
+import root.transfer.util.DbHelper;
 import root.transfer.util.XmlUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Auther: pccw
@@ -28,17 +26,21 @@ import java.util.Map;
  * @Description:
  *      完成历史数据的导入 : 指定从10年的1月份开始导入到 18年12月份
  */
-public class TransferTask implements BaseJob {
+public class TransferTaskByDepartment implements BaseJob {
 
-    private static final Logger logger = Logger.getLogger(TransferTask.class);
+    private static final Logger logger = Logger.getLogger(TransferTaskByDepartment.class);
 
-    private  final String contentPath = "/transfer_budget.sql";    // 导库源sql存放处
+    private  final String contentPath = "/transfer_budget_department.sql";    // 导库源sql存放处
 
-    private  final String contentXML = "/transfer_budget.xml";     // 导库源xml存放处
+    private  final String contentXML = "/transfer_budget_department.xml";     // 导库源xml存放处
 
-    private final int[] yearArray = {2018,2017,2016,2015,2014,2013,2012,2011,2010};
+   // private final int[] yearArray = {2018,2017,2016,2015,2014,2013,2012,2011,2010};
 
-    private final int[] monthArray = {1,2,3,4,5,6,7,8,9,10,11,12};
+    private final int[] yearArray = {2018};
+    // private final int[] monthArray = {1,2,3,4,5,6,7,8,9,10,11,12};
+
+    //  String sql = "select DISTINCT a.DEPARTMENT_ID from TBMPRD.TBM_BUDGET_PROJECT_SUMMARY a " +
+    //                "where a.BUDGET_YEAR=${budget_year}";
 
     @Autowired
     JobService jobService;
@@ -73,7 +75,7 @@ public class TransferTask implements BaseJob {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(
-                            new InputStreamReader(TransferTask.class.getResourceAsStream(contentPath),"UTF-8"));
+                            new InputStreamReader(TransferTaskByDepartment.class.getResourceAsStream(contentPath),"UTF-8"));
             StringBuilder sb = new StringBuilder();
             String s;
             while ((s = reader.readLine()) != null) {
@@ -111,23 +113,28 @@ public class TransferTask implements BaseJob {
         int job_execute_id = Integer.parseInt(jobExecuteMap.get("id").toString());
 
         try {
-
-            // ============== 步骤4 ： for 循环执行脚本
+            TransferWithMultiThreadForMemory transferWithMultiThread = null;
             for(int i=0; i<this.yearArray.length; i++){
-                String transfer_sql_year = content;
                 int transferYear = yearArray[i];
                 logger.info("开始同步"+transferYear+"年份的数据.......");
+                // 4.1 先查询 当前指定年份的 部门情况
+                String department_sql = "select DISTINCT a.DEPARTMENT_ID from TBMPRD.TBM_BUDGET_PROJECT_SUMMARY a " +
+                               "where a.BUDGET_YEAR=${budget_year}";
+                department_sql = department_sql.replace("${budget_year}",String.valueOf(transferYear));
+                List<String> departIdList = (List<String>)DbHelper.executeQuery("budget",department_sql);
+
+                // ============== 步骤4 ： for 循环执行脚本
+                String transfer_sql_year = content;
                 transfer_sql_year = transfer_sql_year.replace("${budget_year}",String.valueOf(transferYear));   // 替换掉占位符
-                for(int j=0; j<this.monthArray.length; j++){
+
+                for(int j=0; j< departIdList.size(); j++){
                     String transfer_sql_temp = transfer_sql_year;
-                    int transferMonth = monthArray[j];
-                    // ===》 导库
-                    // ============= 步骤5.1
-                    logger.info("开始同步"+transferYear+"年份"+transferMonth+"月份的数据.......");
-                    transfer_sql_temp = transfer_sql_temp.replace("${budget_month}",String.valueOf(transferMonth));
-                   //  logger.info("当前转换后的SQL为:\n"+content);
+                    String department_id = departIdList.get(j);
+                    // ============= 步骤5.1  : 替换掉  department_id
+                    logger.info("开始同步"+transferYear+"年份"+department_id+"部门的数据.......");
+                    transfer_sql_temp = transfer_sql_temp.replace("${department_id}",department_id);
                     // ============= 步骤5.2 : 组装好 root 对象，把 content 塞入到 root.srcInfo.sql 当中去
-                    root = XmlUtil.pareseXmlToJavaBean(TransferTask.class.getResourceAsStream(contentXML));
+                    root = XmlUtil.pareseXmlToJavaBean(TransferTaskByDepartment.class.getResourceAsStream(contentXML));
                     if(root!=null){
                         root.getTransferInfo().get(0).getSrcInfo().setSql(transfer_sql_temp);
                     }else {
@@ -136,24 +143,25 @@ public class TransferTask implements BaseJob {
                     }
                     // ============ 步骤5.3 多线程导库
                     List<TransferInfo> pojos = root.getTransferInfo();   // 得到所有要转换的节点信息
-                    TransferWithMultiThreadForMemory transferWithMultiThread = new TransferWithMultiThreadForMemory();
+                    transferWithMultiThread = new TransferWithMultiThreadForMemory();
                     // 执行最先需要执行的sql  ： 删除掉临时表的数据
                     transferWithMultiThread.executePreInfo(root.getPreInfo());
 
                     for (int dataCount = 0; dataCount < pojos.size(); dataCount++) {
                         transferWithMultiThread.transfer(pojos.get(dataCount),
                                 job_execute_id,
-                                this.jobExecuteService,transferYear,transferMonth,pojos.get(dataCount).isCreatetable());
+                                this.jobExecuteService,transferYear,0,pojos.get(dataCount).isCreatetable());
+                        // 执行最后需要的回调sql  ： 把临时表的数据导入到本地真正的存放数据库的地方
                     }
-
-                    // 执行最后需要的回调sql  ： 把临时表的数据导入到本地真正的存放数据库的地方
-                    transferWithMultiThread.executeCallBack(root.getCallBackInfo(),
-                            this.jobExecuteService,String.valueOf(transferYear),String.valueOf(transferMonth),
-                            job_execute_id
-                    );
                 }
                 logger.info("同步"+transferYear+"年份的数据结束");
             }
+
+            // 执行回调SQL
+            transferWithMultiThread.executeCallBack(root.getCallBackInfo(),
+                    this.jobExecuteService,String.valueOf(0),String.valueOf(0),
+                    job_execute_id
+            );
         }catch (Exception e) {
             logger.error("执行回调sql出错：", e);
             e.printStackTrace();

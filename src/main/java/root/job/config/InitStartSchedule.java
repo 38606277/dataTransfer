@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import root.job.Util.BaseJob;
 import root.job.Util.Constant;
+import root.job.Util.SchedulerUtil;
 import root.job.service.JobService;
 
 import java.util.HashMap;
@@ -59,6 +60,8 @@ public class InitStartSchedule implements CommandLineRunner {
 
         int i = 0;
         int j = 0;
+        int m = 0;
+        int n = 0;
         // 启动状态为1的任务
         for (Map resultMap : mapList) {
             String job_name = resultMap.get("job_name").toString();
@@ -72,7 +75,16 @@ public class InitStartSchedule implements CommandLineRunner {
                 jobDetail = JobBuilder.newJob(getClass(Constant.TASK_CLASS.TRANSFER_TASK_CLASS_PATH).getClass()).
                         withIdentity(job_name, job_group).build();
                 i++;
-            }  else {
+            } else if(jobParamJosn !=null && Constant.TASK_CLASS.TRANSFER_DEPART_VALUE.equals(jobParamJosn.getString("task_path"))){
+                jobDetail = JobBuilder.newJob(getClass(Constant.TASK_CLASS.TRANSFER_DEPART_TASK_CLASS_PATH).getClass()).
+                        withIdentity(job_name, job_group).build();
+                m++;
+            }else if(jobParamJosn !=null && Constant.TASK_CLASS.TRANSFER_DEFAULT_DEPART_VALUE.equals(jobParamJosn.getString("task_path"))){
+                jobDetail = JobBuilder.newJob(getClass(Constant.TASK_CLASS.TRANSFER_DEFAULT_DEPART_TASK_CLASS_PATH).getClass()).
+                        withIdentity(job_name, job_group).build();
+                n++;
+            }
+            else {
                 jobDetail = JobBuilder.newJob(getClass(Constant.TASK_CLASS.DEFAULT_TASK_CLASS_PATH).getClass()).
                         withIdentity(job_name, job_group).build();
                 j++;
@@ -96,6 +108,8 @@ public class InitStartSchedule implements CommandLineRunner {
 
         logger.info("启动了"+i+"个移动转换任务!==============");
         logger.info("启动了"+j+"个通用转换任务!==============");
+        logger.info("启动了"+m+"个移动转换(部门)任务!==============");
+        logger.info("启动了"+n+"个移动转换(通用)任务!==============");
     }
 
     public static BaseJob getClass(String classname) throws Exception {

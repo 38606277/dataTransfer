@@ -47,6 +47,10 @@ public class TransferWithMultiThreadForMemory extends BaseTranser {
 
                         // 往 全局的 processMap 当中写
                         int countAll = rs.getRow();
+                        if(countAll == 0) {
+                            log.warn("当前数据为0行,无需导入");
+                            return;
+                        }
                         Constant.PROCESSMAP.put(job_execute_id+Constant.TOTAL, countAll);   // 总数
 
                         BigDecimal result = new BigDecimal((double) rs.getRow()/5000).setScale(0, BigDecimal.ROUND_UP);  // 向上取整

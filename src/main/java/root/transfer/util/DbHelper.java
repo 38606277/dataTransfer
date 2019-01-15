@@ -67,9 +67,9 @@ public class DbHelper {
             if (sql == null || sql.equals("")) {
                 sql = "select * from " + src.getTable();
             }
-            log.debug("=================SQL是");
-            log.debug(sql);
-            log.debug("=================");
+            // log.debug("=================SQL是");
+            // log.debug(sql);
+            // log.debug("=================");
             // 实现任意滚动
           //   stm = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             stm = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -121,6 +121,48 @@ public class DbHelper {
         });
         log.info("耗时：" + (System.currentTimeMillis() - time));
         return list;
+    }
+
+
+    // 传递SQL 以及要连接的数据库
+    public static List<String> executeQuery(String db_name,String execute_sql) {
+        Connection conn = null;
+        PreparedStatement stm = null;
+        List<String> list = new ArrayList<>();
+        try {
+            conn = getConnection(db_name);
+
+            String sql = execute_sql;
+            if (StringUtils.isBlank(sql)) {
+               return null;
+            }
+            log.debug("=================SQL是");
+            log.debug(sql);
+            log.debug("=================");
+            // 实现任意滚动
+            stm = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            // stm.setQueryTimeout(180);    // 设置 3分钟查询超时时间
+           //  stm.setFetchSize(1000);
+            // stm.setFetchDirection(ResultSet.FETCH_REVERSE);
+            ResultSet rs = stm.executeQuery();
+            if (rs != null) {
+                while (rs.next()) {
+                    list.add(rs.getString("DEPARTMENT_ID"));
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (stm != null) stm.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                log.error("关闭连接时发生异常", e);
+            }
+        }
     }
 
 
