@@ -122,7 +122,7 @@ public class TransferTaskByDepartment implements BaseJob {
                                "where a.BUDGET_YEAR=${budget_year}";
                 department_sql = department_sql.replace("${budget_year}",String.valueOf(transferYear));
                 List<String> departIdList = (List<String>)DbHelper.executeQuery("budget",department_sql);
-
+                logger.info(transferYear+"年度一共有 "+departIdList.size()+" 个部门");
                 // ============== 步骤4 ： for 循环执行脚本
                 String transfer_sql_year = content;
                 transfer_sql_year = transfer_sql_year.replace("${budget_year}",String.valueOf(transferYear));   // 替换掉占位符

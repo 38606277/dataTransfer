@@ -154,6 +154,7 @@ public class TransferTaskByEtlXml implements BaseJob {
         // 5-pre  TODO ： 查询出 当前年份的 部门明细表的数据   for 循环导库
         // 4.1 先查询 当前指定年份的 部门情况
         List<String> departIdList = (List<String>)DbHelper.executeQuery("budget",department_sql);
+        logger.info("当前全局变量配置的年度一共有 "+departIdList.size()+" 个部门");
         TransferWithMultiThreadForMemory  transferWithMultiThread = new TransferWithMultiThreadForMemory();
         // 执行最先需要执行的sql
         transferWithMultiThread.executePreInfo(root.getPreInfo());
