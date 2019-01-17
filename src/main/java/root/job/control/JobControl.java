@@ -145,7 +145,7 @@ public class JobControl extends RO {
                        SchedulerUtil.addJob(Constant.TASK_CLASS.DEFAULT_TASK_CLASS_PATH,job_name, job_group, job_cron, jobDataMap);   // 在当前的 scheduler 管理当中加上这个任务
                    }
                } catch (Exception e) {
-                   TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+                   // TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
                    logger.error("内存定时任务管理器:加入任务[\"+job_name+\"]失败,具体错误如下\n"+e.getMessage());
                    e.printStackTrace();
                    return ErrorMsg("3000","内存定时任务管理器:加入任务["+job_name+"]失败");
@@ -205,7 +205,7 @@ public class JobControl extends RO {
                 SchedulerUtil.updateJobCronExpressionForMemory(resultMap.get("job_name").toString(), resultMap.get("job_group").toString(), job_cron,jobDataMap);
             }
         } catch (Exception e) {
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+            // TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
             logger.error("变更任务异常：" + e.getMessage());
             return ErrorMsg("3000", "变更任务异常" + e.getMessage());
         }
@@ -237,7 +237,7 @@ public class JobControl extends RO {
             this.jobService.deleteJobById(id);
             SchedulerUtil.deleteJobForMemory(resultMap.get("job_name").toString(),resultMap.get("job_group").toString());
         }catch (Exception e){
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+           //  TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
             logger.error("变更任务异常：" + e.getMessage());
             return ErrorMsg("3000", "删除任务异常" + e.getMessage());
         }
@@ -270,7 +270,7 @@ public class JobControl extends RO {
                 }
             }
         }catch (Exception e){
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+           // TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
             logger.error("变更任务异常：" + e.getMessage());
             return ErrorMsg("3000", "删除任务异常" + e.getMessage());
         }
@@ -316,7 +316,7 @@ public class JobControl extends RO {
                 }
                 this.jobService.updateJobById(map);
             }catch (Exception e){
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+               //  TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
                 logger.error("执行任务异常：" + e.getMessage());
                 return ErrorMsg("3000", "执行任务异常" + e.getMessage());
             }
@@ -361,7 +361,7 @@ public class JobControl extends RO {
                 }
                 this.jobService.updateJobById(map);
             }catch (Exception e){
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+               //  TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
                 logger.error("终止任务异常：" + e.getMessage());
                 return ErrorMsg("3000", "终止任务异常" + e.getMessage());
             }
@@ -401,7 +401,7 @@ public class JobControl extends RO {
                 }
             }
         }catch (Exception e){
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
+            // TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   // 手动回滚事务,理应AOP切面扫到controller层异常
             logger.error("终止任务异常：" + e.getMessage());
             return ErrorMsg("3000", "终止任务异常" + e.getMessage());
         }
