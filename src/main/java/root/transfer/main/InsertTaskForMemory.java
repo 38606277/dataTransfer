@@ -60,7 +60,7 @@ public class InsertTaskForMemory implements Runnable {
                 queue.take();
 
                 // 对本地的 mysql 当中的 etl_job_execute 更新 process
-                if(this.jobExecuteService != null && this.oneProcess!=null){
+              /*  if(this.jobExecuteService != null && this.oneProcess!=null){
                     // 下面调用的这个方法是同步的
                     synchronized (this.jobExecuteService){
                         int result = 0;
@@ -74,9 +74,10 @@ public class InsertTaskForMemory implements Runnable {
                             this.jobExecuteService.updateEtlJobExecute(map);
                         }
                     }
+                    // this.jobExecuteService = null;  // 释放对象，让其释放对象的连接
                 } else{
                     log.error("无法得到jobExecuteService对象,");
-                }
+                }*/
             }
         } catch (Exception e) {
             log.error("数据插入异常:", e);
