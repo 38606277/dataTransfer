@@ -41,8 +41,8 @@ public class TransferWithMultiThreadForMemory extends BaseTranser {
 
                         // 1. 计算所需要的次数 ： rs 移动到最后面 ，确认总条数 ,  rs再移动回去，
                         rs.last();
-                        if(year>0 && month>0){
-                            log.info("特别提醒*******************"+year+"年"+month+"月"+"需要导入的数据行数是"+ rs.getRow()+"**************");
+                        if(year>0){
+                            log.info("特别提醒***"+year+"年当前部门需要导入的数据行数是"+ rs.getRow()+"条");
                         }
 
                         // 往 全局的 processMap 当中写

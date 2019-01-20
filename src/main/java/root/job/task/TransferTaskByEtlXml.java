@@ -156,6 +156,9 @@ public class TransferTaskByEtlXml implements BaseJob {
         List<String> departIdList = (List<String>)DbHelper.executeQuery("budget",department_sql);
         logger.info("当前全局变量配置的年度一共有 "+departIdList.size()+" 个部门");
         TransferWithMultiThreadForMemory  transferWithMultiThread = new TransferWithMultiThreadForMemory();
+        Calendar cale = Calendar.getInstance();
+        int year = cale.get(Calendar.YEAR);
+        logger.info("开始同步系统当前"+year+"年份的数据.......");
         // 执行最先需要执行的sql
         transferWithMultiThread.executePreInfo(root.getPreInfo());
         Root tempRoot = null;
@@ -197,7 +200,7 @@ public class TransferTaskByEtlXml implements BaseJob {
                 for (int i = 0; i < pojos.size(); i++) {
                     transferWithMultiThread.transfer(pojos.get(i),
                             Integer.parseInt(jobExecuteMap.get("id").toString()), this.jobExecuteService,
-                            0,0,pojos.get(i).isCreatetable());    // 对每一个 对象进行导库
+                            year,0,pojos.get(i).isCreatetable());    // 对每一个 对象进行导库
                 }
 
             }catch (Exception e) {
